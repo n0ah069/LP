@@ -517,8 +517,8 @@ body {
 .sp-hc { padding: 9px 6px; text-align: center; font-size: var(--fs-sm); font-weight: 600; color: var(--text2); border-right: 1px solid var(--border); }
 .sp-hc:last-child { border-right: none; }
 .sp-row { display: grid; grid-template-columns: 64px repeat(5,1fr); border-top: 1px solid var(--border); }
-.sp-time { padding: 6px; font-size: 10px; color: var(--text4); font-family: 'DM Mono', monospace; text-align: right; border-right: 1px solid var(--border); background: var(--s2); display: flex; align-items: center; justify-content: flex-end; }
-.sp-cell { padding: 3px; border-right: 1px solid var(--border); min-height: 50px; cursor: pointer; transition: background .1s; position: relative; }
+.sp-time { padding: 4px 6px; font-size: 9.5px; color: var(--text3); font-family: 'DM Mono', monospace; text-align: right; border-right: 1px solid var(--border); background: var(--s2); display: flex; align-items: center; justify-content: flex-end; white-space: pre-line; line-height: 1.4; }
+.sp-cell { padding: 3px; border-right: 1px solid var(--border); min-height: 68px; cursor: pointer; transition: background .1s; position: relative; }
 .sp-cell:last-child { border-right: none; }
 .sp-cell:hover { background: var(--s2); }
 .sp-ev { border-radius: 6px; padding: 5px 7px; font-size: 11px; font-weight: 500; line-height: 1.3; height: 100%; display: flex; flex-direction: column; gap: 2px; }
@@ -960,7 +960,7 @@ const COLORS=[
   {c:'#5a5250',bg:'#f0efe9',tc:'#2e2c2a'},{c:'#3d5a80',bg:'#e8eef6',tc:'#1e3356'},
 ];
 const DAYS=['Mo','Di','Mi','Do','Fr'];
-const TIMES=['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
+const TIMES=['08:15–09:45','10:15–11:45','12:15–13:45','14:15–15:45','16:15–17:45','18:15–19:45'];
 
 /* ═══════════════════════════════════════
    THEME
@@ -1054,8 +1054,12 @@ function prioBadge(p){
 ═══════════════════════════════════════ */
 function autoFormat(raw){
   if(!raw||!raw.trim())return raw;
-  // Already has explicit structure → pass through unchanged
-  if(/^(#{1,2} |\* \d|[IVX]+\. |[-•] |\d+\. )/m.test(raw))return raw;
+  // Already has explicit structure → clean up lone * and pass through
+  if(/^(#{1,2} |\* \d|[IVX]+\. |[-•] |\d+\. )/m.test(raw)){
+    // Clean lone bullet lines before passing through
+    raw=raw.replace(/^[ \t]*\*[ \t]*\n(\n*)([ \t]*\d+\.)/mg,'\n$1$2');
+    return raw;
+  }
   const lines=raw.split('\n').map(l=>l.trimEnd())
     .filter((l,i,a)=>!(l===''&&i>0&&!a[i-1].trim()));
   return lines.map((line,i)=>{
@@ -1109,123 +1113,114 @@ function inlineRender(s,q=''){
   return s;
 }
 
-function renderRich(raw,q=''){
-  if(!raw||!raw.trim())return '';
-  const lines=raw.split('\n');
-  let out='',listStack=[];
+function renderRich(raw, q=''){
+  if(!raw||!raw.trim()) return '';
+
+  /* ── Pre-processing ────────────────────────────────────────────── */
+  // Normalise line endings
+  raw = raw.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+
+  // Strip lone bullet/star lines that act as visual separators before numbered items
+  // e.g.  "* \n\n1. item"  → "\n\n1. item"
+  raw = raw.replace(/^[ \t]*\*[ \t]*\n/gm, '\n');
+
+  // Collapse 3+ blanks → 2
+  raw = raw.replace(/\n{3,}/g, '\n\n');
+
+  /* ── Helpers ───────────────────────────────────────────────────── */
+  const lines = raw.split('\n');
+  let out = '', stack = [];
 
   function closeAll(){
-    while(listStack.length){out+=listStack.pop()==='ol'?'</ol>':'</ul>';}
+    while(stack.length){ out += stack.pop()==='ol'?'</ol>':'</ul>'; }
   }
-  // Ensure list stack matches desired depth+type
-  function ensureList(type,depth){
-    // Pop extra levels
-    while(listStack.length>depth+1){out+=listStack.pop()==='ol'?'</ol>':'</ul>';}
-    // Replace wrong type at current level
-    if(listStack.length===depth+1&&listStack[listStack.length-1]!==type){
-      out+=listStack.pop()==='ol'?'</ol>':'</ul>';
+  function openList(type, depth){
+    // pop deeper levels
+    while(stack.length > depth+1){ out += stack.pop()==='ol'?'</ol>':'</ul>'; }
+    // replace wrong type at this depth
+    if(stack.length===depth+1 && stack[stack.length-1]!==type){
+      out += stack.pop()==='ol'?'</ol>':'</ul>';
     }
-    // Open missing levels
-    while(listStack.length<=depth){listStack.push(type);out+=type==='ol'?'<ol>':'<ul>';}
+    // open missing levels
+    while(stack.length <= depth){ stack.push(type); out += type==='ol'?'<ol>':'<ul>'; }
   }
-
-  // Count leading spaces, normalise tab=2
-  function indentDepth(line){
+  // Indent depth: every 2–4 spaces = +1 level
+  function depth(line){
     let n=0;
-    for(const ch of line){if(ch===' ')n++;else if(ch==='\t')n+=2;else break;}
-    // Each 2-3 spaces = one depth level
-    return Math.floor(n/2);
+    for(const c of line){ if(c===' ')n++; else if(c==='\t')n+=3; else break; }
+    return Math.floor(n/3);
   }
+  function ri(s){ return inlineRender(escHtml(s), q); }
 
-  lines.forEach(line=>{
-    const t=line.trim();
+  /* ── Line-by-line rendering ────────────────────────────────────── */
+  lines.forEach(line => {
+    const t = line.trim();
 
-    // ── Blank line ──
-    if(!t){closeAll();out+='<div style="height:5px"></div>';return;}
-
-    // ── Hard separator ──
-    if(/^---+$/.test(t)){closeAll();out+='<div class="rsep"></div>';return;}
-
-    // ── Headings ──
-    // # H1
-    if(/^# /.test(t)){closeAll();out+=`<span class="rh1">${inlineRender(escHtml(t.slice(2).trim()),q)}</span>`;return;}
-    // ## H2
-    if(/^## /.test(t)){closeAll();out+=`<span class="rh2">${inlineRender(escHtml(t.slice(3).trim()),q)}</span>`;return;}
-    // Roman numeral heading: I. II. III. IV. V. etc
-    if(/^(I{1,3}|IV|VI{0,3}|IX|XI{0,3}|XIV|XV|XVI{0,3}|XIX|XX)\.\s/.test(t)){
-      closeAll();
-      const content=t.replace(/^[IVX]+\.\s*/,'');
-      out+=`<span class="rh1">${inlineRender(escHtml(content),q)}</span>`;return;
+    // Skip lone decorative bullets
+    if(t==='' || /^[*•·]$/.test(t)){
+      if(t==='') { closeAll(); out+='<div style="height:6px"></div>'; }
+      return;
     }
-    // Arabic-only heading (e.g. "1. Title" at depth 0 with NO further context being a list)
-    // Handled below as numbered list
 
-    // ── Callouts ──
-    if(/^!>/.test(t)){closeAll();out+=`<div class="rcall rcall-warn">${inlineRender(escHtml(t.slice(2).trim()),q)}</div>`;return;}
-    if(/^>/.test(t)){closeAll();out+=`<div class="rcall">${inlineRender(escHtml(t.slice(1).trim()),q)}</div>`;return;}
+    // Hard rule ---
+    if(/^-{3,}$/.test(t)){ closeAll(); out+='<div class="rsep"></div>'; return; }
 
-    // ── Formula block ──
-    if(/^:=/.test(t)){closeAll();out+=`<div class="rdef">${inlineRender(escHtml(t.slice(2).trim()),q)}</div>`;return;}
+    // H1: "# text"
+    if(/^# /.test(t)){ closeAll(); out+=`<span class="rh1">${ri(t.slice(2).trim())}</span>`; return; }
+    // H2: "## text"
+    if(/^## /.test(t)){ closeAll(); out+=`<span class="rh2">${ri(t.slice(3).trim())}</span>`; return; }
 
-    // ── Image: img:data_url|optional caption ──
+    // Roman numeral heading: I. II. III. IV. etc
+    if(/^(I{1,3}|IV|VI{0,3}|IX|XI{0,2}|XIV|XV)\.\s/.test(t)){
+      closeAll();
+      out+=`<span class="rh1">${ri(t.replace(/^[IVX]+\.\s*/,''))}</span>`; return;
+    }
+
+    // Callout: > info  |  !> warning
+    if(/^!>/.test(t)){ closeAll(); out+=`<div class="rcall rcall-warn">${ri(t.slice(2).trim())}</div>`; return; }
+    if(/^>/.test(t)) { closeAll(); out+=`<div class="rcall">${ri(t.slice(1).trim())}</div>`; return; }
+
+    // Formula block: := expression
+    if(/^:=/.test(t)){ closeAll(); out+=`<div class="rdef">${ri(t.slice(2).trim())}</div>`; return; }
+
+    // Image: img:url|caption
     if(/^img:/.test(t)){
       closeAll();
-      const rest=t.slice(4);
-      const pipeIdx=rest.indexOf('|');
-      const src=pipeIdx>=0?rest.slice(0,pipeIdx):rest;
-      const cap=pipeIdx>=0?rest.slice(pipeIdx+1):'';
+      const rest=t.slice(4), p=rest.indexOf('|');
+      const src=p>=0?rest.slice(0,p):rest, cap=p>=0?rest.slice(p+1):'';
       out+=`<div class="rich-img-wrap"><img class="rich-img" src="${src}" alt="${escHtml(cap)}" loading="lazy">${cap?`<div class="rich-img-caption">${escHtml(cap)}</div>`:''}</div>`;
       return;
     }
 
-    // ── Mixed bullet+number: "* 1. text" or "• 1. text" ──
-    // Strip leading bullet char, then treat rest as numbered item
-    const mixedMatch=t.match(/^[*•\-–]\s+(\d+)\.\s+(.+)/);
-    if(mixedMatch){
-      const depth=indentDepth(line);
-      ensureList('ol',depth);
-      out+=`<li class="ln" value="${mixedMatch[1]}"><span>${inlineRender(escHtml(mixedMatch[2]),q)}</span></li>`;
-      return;
+    const d = depth(line);
+
+    // Mixed "* 1. text" or "• 1. text" → numbered
+    const mx = t.match(/^[*•\-–]\s+(\d+)\.\s+(.+)/);
+    if(mx){ openList('ol',d); out+=`<li class="ln" value="${mx[1]}"><span>${ri(mx[2])}</span></li>`; return; }
+
+    // Numbered: "1. text"
+    const nm = t.match(/^(\d+)\.\s+(.+)/);
+    if(nm){ openList('ol',d); out+=`<li class="ln" value="${nm[1]}"><span>${ri(nm[2])}</span></li>`; return; }
+
+    // Bullet: "- text"  "* text"  "• text"
+    const bl = t.match(/^[-–•*]\s+(.+)/);
+    if(bl){
+      openList('ul',d);
+      const cls=['l1','l2','l3'][Math.min(d,2)];
+      out+=`<li class="${cls}"><span>${ri(bl[1])}</span></li>`; return;
     }
 
-    // ── Numbered list: 1. item ──
-    const numMatch=t.match(/^(\d+)\.\s+(.+)/);
-    if(numMatch){
-      const depth=indentDepth(line);
-      ensureList('ol',depth);
-      out+=`<li class="ln" value="${numMatch[1]}"><span>${inlineRender(escHtml(numMatch[2]),q)}</span></li>`;
-      return;
+    // Indented plain text → sub-bullet
+    if(d>0){
+      openList('ul',d);
+      const cls=['l1','l2','l3'][Math.min(d,2)];
+      out+=`<li class="${cls}"><span>${ri(t.replace(/^[-–•*]\s*/,''))}</span></li>`; return;
     }
 
-    // ── Bullet list: - • * item ──
-    const bulMatch=t.match(/^[-–•*]\s+(.+)/);
-    if(bulMatch){
-      const depth=indentDepth(line);
-      ensureList('ul',depth);
-      const cls=['l1','l2','l3'][Math.min(depth,2)];
-      out+=`<li class="${cls}"><span>${inlineRender(escHtml(bulMatch[1]),q)}</span></li>`;
-      return;
-    }
-
-    // ── Indented plain text → sub-bullet ──
-    if(indentDepth(line)>0&&t){
-      const depth=indentDepth(line);
-      ensureList('ul',depth);
-      const cls=['l1','l2','l3'][Math.min(depth,2)];
-      const clean=t.replace(/^[-–•*]\s*/,'');
-      out+=`<li class="${cls}"><span>${inlineRender(escHtml(clean),q)}</span></li>`;
-      return;
-    }
-
-    // ── Regular line ──
+    // ── Everything else: BULLET by default ──────────────────────────
+    // No more fließtext. Every non-special line becomes a bullet point.
     closeAll();
-    // Paragraph (longer / ends with sentence punctuation)
-    if(t.length>90||/[.!?]$/.test(t)){
-      out+=`<p>${inlineRender(escHtml(t),q)}</p>`;
-    } else {
-      // Short line → bullet for visual clarity
-      out+=`<ul><li class="l1"><span>${inlineRender(escHtml(t),q)}</span></li></ul>`;
-    }
+    out+=`<ul><li class="l1"><span>${ri(t)}</span></li></ul>`;
   });
 
   closeAll();
@@ -1440,7 +1435,7 @@ function renderStundenplan(){
   <div class="sp-wrap">
     <div class="sp-head"><div class="sp-hc">Zeit</div>${DAYS.map(d=>`<div class="sp-hc">${d}</div>`).join('')}</div>`;
   TIMES.forEach(time=>{
-    h+=`<div class="sp-row"><div class="sp-time">${time}</div>`;
+    const [tStart,tEnd]=(time+'–').split('–');h+=`<div class="sp-row"><div class="sp-time">${tStart}\n${tEnd?'–'+tEnd:''}</div>`;
     DAYS.forEach(day=>{
       const key=day+'_'+time,ev=S.__sp[key];
       if(ev){
