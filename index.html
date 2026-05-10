@@ -742,6 +742,55 @@ body {
 .fmt-tb-btn:hover { background: rgba(255,255,255,.15); }
 .fmt-tb-btn.clr { width: 18px; height: 18px; border-radius: 50%; padding: 0; }
 .fmt-tb-sep { width: 1px; height: 18px; background: rgba(255,255,255,.2); margin: 0 2px; }
+
+/* ── Images in rich text ── */
+.rich-img-wrap {
+  margin: 10px 0; border-radius: var(--rl);
+  overflow: hidden; display: inline-block;
+  max-width: 100%; border: 1px solid var(--border2);
+  box-shadow: var(--shadow);
+}
+.rich-img { display: block; max-width: 100%; height: auto; border-radius: var(--rl); }
+.rich-img-caption {
+  font-size: 11px; color: var(--text3); text-align: center;
+  padding: 5px 10px 7px; background: var(--s2);
+  font-style: italic; border-top: 1px solid var(--border);
+}
+/* Image upload button in editor */
+.img-upload-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border: 1px dashed var(--border2);
+  border-radius: var(--r); background: transparent; cursor: pointer;
+  font-size: var(--fs-sm); font-family: inherit; color: var(--text3);
+  transition: all .12s; margin-top: 6px;
+}
+.img-upload-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue2); }
+/* Image grid for multiple images */
+.rich-img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 8px; margin: 10px 0; }
+
+/* ── Better blockquote / callout ── */
+.rich .rcall { border-left: 3px solid var(--blue); background: var(--blue2); padding: 10px 14px; border-radius: 0 var(--r) var(--r) 0; margin: 10px 0; font-size: var(--fs-sm); color: var(--text2); line-height: 1.7; }
+.rich .rcall-warn { border-color: var(--amber); background: var(--amber2); }
+.rich .rcall-imp { border-color: var(--red); background: var(--red2); color: var(--red); }
+
+/* ── KI Formatierungsreferenz ── */
+.ki-ref { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--rl); overflow: hidden; box-shadow: var(--shadow); }
+.ki-ref-tabs { display: flex; border-bottom: 1px solid var(--border2); background: var(--s2); overflow-x: auto; }
+.ki-tab { padding: 9px 16px; font-size: var(--fs-sm); font-weight: 500; color: var(--text3); border: none; background: transparent; cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; font-family: inherit; transition: all .12s; }
+.ki-tab.active { color: var(--blue); border-bottom-color: var(--blue); background: var(--surface); }
+.ki-ref-body { padding: 18px; }
+.ki-section { display: none; }
+.ki-section.active { display: block; }
+.ki-table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+.ki-table th { text-align: left; padding: 7px 12px; font-size: var(--fs-xs); font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--border2); background: var(--s2); }
+.ki-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.6; }
+.ki-table tr:last-child td { border-bottom: none; }
+.ki-table td:first-child { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--blue3); white-space: nowrap; }
+.ki-table td:last-child { color: var(--text2); }
+.ki-prompt { background: var(--s2); border: 1px solid var(--border2); border-radius: var(--r); padding: 14px 16px; font-size: var(--fs-sm); line-height: 1.8; color: var(--text2); white-space: pre-wrap; font-family: inherit; }
+.ki-copy-btn { margin-top: 8px; padding: 5px 14px; border: 1px solid var(--border2); border-radius: var(--r); background: transparent; cursor: pointer; font-size: var(--fs-xs); font-family: inherit; color: var(--text2); transition: all .12s; }
+.ki-copy-btn:hover { background: var(--blue2); border-color: var(--blue); color: var(--blue); }
+.ki-badge { display: inline-block; font-size: var(--fs-xs); padding: 1px 7px; border-radius: 20px; font-weight: 500; margin: 1px; }
 </style>
 </head>
 <body>
@@ -851,6 +900,10 @@ body {
   <input id="sec-lz" placeholder="…Indifferenzkurven zeichnen und interpretieren."/>
   <label>Inhalt <span class="hint">(wird automatisch formatiert)</span></label>
   <textarea id="sec-text" placeholder="Text hier einfügen oder tippen.&#10;&#10;Unterstützte Formatierung:&#10;# Überschrift 1  /  ## Überschrift 2&#10;- Bullet Point  /    sub-punkt (einrücken)&#10;1. nummerierte Liste&#10;**fett**  /  *kursiv*  /  `code`&#10;&gt; Wichtiger Hinweis  /  !&gt; Warnung&#10;--- Trennlinie"></textarea>
+  <label style="cursor:pointer" class="img-upload-btn">
+    📷 Bild einfügen
+    <input type="file" accept="image/*" style="display:none" onchange="insertImgInline(event,'sec-text')">
+  </label>
   <div class="auto-note">Text wird beim Speichern automatisch strukturiert – einfach einfügen.</div>
   <div class="fmt-help">
     <div class="fh-row">
@@ -1001,20 +1054,18 @@ function prioBadge(p){
 ═══════════════════════════════════════ */
 function autoFormat(raw){
   if(!raw||!raw.trim())return raw;
-  // If already has markdown markers → don't reprocess
-  if(/^(#{1,2}\s|[-•*]\s|\s{2,}|\d+\.\s)/m.test(raw))return raw;
+  // Already has explicit structure → pass through unchanged
+  if(/^(#{1,2} |\* \d|[IVX]+\. |[-•] |\d+\. )/m.test(raw))return raw;
   const lines=raw.split('\n').map(l=>l.trimEnd())
     .filter((l,i,a)=>!(l===''&&i>0&&!a[i-1].trim()));
   return lines.map((line,i)=>{
     const t=line.trim();if(!t)return '';
     const prevEmpty=i===0||!lines[i-1]?.trim();
-    // Heading detection: short, no punct at end, followed by content
-    if(prevEmpty&&t.length<70&&!/[.,:;!?]$/.test(t)&&!/^[-•*\d]/.test(t)&&i<lines.length-1&&lines[i+1]?.trim())
-      return '## '+t;
-    // Sub-bullets
-    if(/^[-–•]\s/.test(t)||/^\s{2,}/.test(line))return '  '+t.replace(/^[-–•]\s*/,'');
-    // Separator
     if(/^[-=_]{3,}$/.test(t))return '---';
+    if(/^\s{2,}/.test(line)||/^[-–•]\s/.test(t))
+      return '  '+t.replace(/^[-–•]\s*/,'');
+    if(prevEmpty&&t.length<80&&!/[,;]$/.test(t)&&!/^[-•*\d]/.test(t)&&i<lines.length-1&&lines[i+1]?.trim())
+      return '## '+t;
     return t;
   }).join('\n');
 }
@@ -1046,6 +1097,10 @@ function inlineRender(s,q=''){
   s=s.replace(/!!(.+?)!!/g,'<span class="mark-red">$1</span>');
   // Box highlight [[text]]
   s=s.replace(/\[\[(.+?)\]\]/g,'<span class="mark-box">$1</span>');
+  // Inline math $x$ (single dollar, not $$)
+  s=s.replace(/\$([^$]+?)\$/g,'<span style="font-family:\'DM Mono\',monospace;font-style:italic;color:var(--blue3)">$1</span>');
+  // Superscript ^text^ (single caret, not ^^)
+  s=s.replace(/\^([^\^]+?)\^/g,'<sup>$1</sup>');
   // Search highlight
   if(q){
     const safe=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
@@ -1057,109 +1112,123 @@ function inlineRender(s,q=''){
 function renderRich(raw,q=''){
   if(!raw||!raw.trim())return '';
   const lines=raw.split('\n');
-  let out='',listStack=[],listDepth=-1;
+  let out='',listStack=[];
 
-  function closeAllLists(){
-    while(listStack.length>0){
-      out+=listStack.pop()==='ol'?'</ol>':'</ul>';
-    }
-    listDepth=-1;
+  function closeAll(){
+    while(listStack.length){out+=listStack.pop()==='ol'?'</ol>':'</ul>';}
   }
+  // Ensure list stack matches desired depth+type
   function ensureList(type,depth){
+    // Pop extra levels
     while(listStack.length>depth+1){out+=listStack.pop()==='ol'?'</ol>':'</ul>';}
+    // Replace wrong type at current level
     if(listStack.length===depth+1&&listStack[listStack.length-1]!==type){
       out+=listStack.pop()==='ol'?'</ol>':'</ul>';
     }
-    while(listStack.length<=depth){
-      const t=type;listStack.push(t);out+=t==='ol'?'<ol>':'<ul>';
-    }
-    listDepth=depth;
+    // Open missing levels
+    while(listStack.length<=depth){listStack.push(type);out+=type==='ol'?'<ol>':'<ul>';}
+  }
+
+  // Count leading spaces, normalise tab=2
+  function indentDepth(line){
+    let n=0;
+    for(const ch of line){if(ch===' ')n++;else if(ch==='\t')n+=2;else break;}
+    // Each 2-3 spaces = one depth level
+    return Math.floor(n/2);
   }
 
   lines.forEach(line=>{
     const t=line.trim();
 
-    // Blank line
-    if(!t){closeAllLists();out+='<div style="height:4px"></div>';return;}
+    // ── Blank line ──
+    if(!t){closeAll();out+='<div style="height:5px"></div>';return;}
 
-    // H1: # heading
-    if(/^# /.test(t)){
-      closeAllLists();
-      out+=`<span class="rh1">${inlineRender(escHtml(t.slice(2).trim()),q)}</span>`;
-      return;
-    }
-    // H2: ## heading
-    if(/^## /.test(t)){
-      closeAllLists();
-      out+=`<span class="rh2">${inlineRender(escHtml(t.slice(3).trim()),q)}</span>`;
-      return;
-    }
-    // Separator ---
-    if(/^---+$/.test(t)){closeAllLists();out+='<div class="rsep"></div>';return;}
+    // ── Hard separator ──
+    if(/^---+$/.test(t)){closeAll();out+='<div class="rsep"></div>';return;}
 
-    // Callout: > text  (info), !> text (warn), !! text (important)
-    if(/^!!/.test(t)){
-      closeAllLists();
-      out+=`<div class="rcall rcall-imp">${inlineRender(escHtml(t.slice(2).trim()),q)}</div>`;
-      return;
+    // ── Headings ──
+    // # H1
+    if(/^# /.test(t)){closeAll();out+=`<span class="rh1">${inlineRender(escHtml(t.slice(2).trim()),q)}</span>`;return;}
+    // ## H2
+    if(/^## /.test(t)){closeAll();out+=`<span class="rh2">${inlineRender(escHtml(t.slice(3).trim()),q)}</span>`;return;}
+    // Roman numeral heading: I. II. III. IV. V. etc
+    if(/^(I{1,3}|IV|VI{0,3}|IX|XI{0,3}|XIV|XV|XVI{0,3}|XIX|XX)\.\s/.test(t)){
+      closeAll();
+      const content=t.replace(/^[IVX]+\.\s*/,'');
+      out+=`<span class="rh1">${inlineRender(escHtml(content),q)}</span>`;return;
     }
-    if(/^!>/.test(t)){
-      closeAllLists();
-      out+=`<div class="rcall rcall-warn">${inlineRender(escHtml(t.slice(2).trim()),q)}</div>`;
-      return;
-    }
-    if(/^>/.test(t)){
-      closeAllLists();
-      out+=`<div class="rcall">${inlineRender(escHtml(t.slice(1).trim()),q)}</div>`;
-      return;
-    }
-    // Formula block: := formula
-    if(/^:=/.test(t)){
-      closeAllLists();
-      out+=`<div class="rdef">${escHtml(t.slice(2).trim())}</div>`;
+    // Arabic-only heading (e.g. "1. Title" at depth 0 with NO further context being a list)
+    // Handled below as numbered list
+
+    // ── Callouts ──
+    if(/^!>/.test(t)){closeAll();out+=`<div class="rcall rcall-warn">${inlineRender(escHtml(t.slice(2).trim()),q)}</div>`;return;}
+    if(/^>/.test(t)){closeAll();out+=`<div class="rcall">${inlineRender(escHtml(t.slice(1).trim()),q)}</div>`;return;}
+
+    // ── Formula block ──
+    if(/^:=/.test(t)){closeAll();out+=`<div class="rdef">${inlineRender(escHtml(t.slice(2).trim()),q)}</div>`;return;}
+
+    // ── Image: img:data_url|optional caption ──
+    if(/^img:/.test(t)){
+      closeAll();
+      const rest=t.slice(4);
+      const pipeIdx=rest.indexOf('|');
+      const src=pipeIdx>=0?rest.slice(0,pipeIdx):rest;
+      const cap=pipeIdx>=0?rest.slice(pipeIdx+1):'';
+      out+=`<div class="rich-img-wrap"><img class="rich-img" src="${src}" alt="${escHtml(cap)}" loading="lazy">${cap?`<div class="rich-img-caption">${escHtml(cap)}</div>`:''}</div>`;
       return;
     }
 
-    // Numbered list: 1. item
+    // ── Mixed bullet+number: "* 1. text" or "• 1. text" ──
+    // Strip leading bullet char, then treat rest as numbered item
+    const mixedMatch=t.match(/^[*•\-–]\s+(\d+)\.\s+(.+)/);
+    if(mixedMatch){
+      const depth=indentDepth(line);
+      ensureList('ol',depth);
+      out+=`<li class="ln" value="${mixedMatch[1]}"><span>${inlineRender(escHtml(mixedMatch[2]),q)}</span></li>`;
+      return;
+    }
+
+    // ── Numbered list: 1. item ──
     const numMatch=t.match(/^(\d+)\.\s+(.+)/);
     if(numMatch){
-      const indent=Math.floor((line.length-line.trimStart().length)/2);
-      ensureList('ol',indent);
-      // Use actual number from source for display via value attr
+      const depth=indentDepth(line);
+      ensureList('ol',depth);
       out+=`<li class="ln" value="${numMatch[1]}"><span>${inlineRender(escHtml(numMatch[2]),q)}</span></li>`;
       return;
     }
 
-    // Bullet list: - item or • item
-    const bulletMatch=t.match(/^[-–•*]\s+(.+)/);
-    if(bulletMatch){
-      const indent=Math.floor((line.length-line.trimStart().length)/2);
-      ensureList('ul',indent);
-      const cls=indent===0?'l1':indent===1?'l2':'l3';
-      out+=`<li class="${cls}"><span>${inlineRender(escHtml(bulletMatch[1]),q)}</span></li>`;
+    // ── Bullet list: - • * item ──
+    const bulMatch=t.match(/^[-–•*]\s+(.+)/);
+    if(bulMatch){
+      const depth=indentDepth(line);
+      ensureList('ul',depth);
+      const cls=['l1','l2','l3'][Math.min(depth,2)];
+      out+=`<li class="${cls}"><span>${inlineRender(escHtml(bulMatch[1]),q)}</span></li>`;
       return;
     }
 
-    // Indented = sub-bullet
-    if(/^\s{2,}/.test(line)&&t){
-      const indent=Math.floor((line.length-line.trimStart().length)/2);
-      ensureList('ul',Math.max(1,indent));
-      const cls=indent<=1?'l2':'l3';
-      out+=`<li class="${cls}"><span>${inlineRender(escHtml(t.replace(/^[-–•]\s*/,'').trim()),q)}</span></li>`;
+    // ── Indented plain text → sub-bullet ──
+    if(indentDepth(line)>0&&t){
+      const depth=indentDepth(line);
+      ensureList('ul',depth);
+      const cls=['l1','l2','l3'][Math.min(depth,2)];
+      const clean=t.replace(/^[-–•*]\s*/,'');
+      out+=`<li class="${cls}"><span>${inlineRender(escHtml(clean),q)}</span></li>`;
       return;
     }
 
-    // Regular paragraph/line → treat as bullet for readability
-    closeAllLists();
-    // If it looks like a standalone short label, wrap as paragraph
-    if(t.length<80&&!t.endsWith('.')){
-      out+=`<ul><li class="l1"><span>${inlineRender(escHtml(t),q)}</span></li></ul>`;
-    } else {
+    // ── Regular line ──
+    closeAll();
+    // Paragraph (longer / ends with sentence punctuation)
+    if(t.length>90||/[.!?]$/.test(t)){
       out+=`<p>${inlineRender(escHtml(t),q)}</p>`;
+    } else {
+      // Short line → bullet for visual clarity
+      out+=`<ul><li class="l1"><span>${inlineRender(escHtml(t),q)}</span></li></ul>`;
     }
   });
 
-  closeAllLists();
+  closeAll();
   return out;
 }
 
@@ -1331,6 +1400,10 @@ function renderModule(){
               <input id="ei-l-${s.id}" value="${sl}" placeholder="Ich kann…"/>
               <label>Inhalt</label>
               <textarea id="ei-x-${s.id}">${st}</textarea>
+              <label style="cursor:pointer" class="img-upload-btn" title="Bild einfügen">
+                📷 Bild einfügen
+                <input type="file" accept="image/*" style="display:none" onchange="insertImgInline(event,'ei-x-${s.id}')">
+              </label>
               <div class="auto-note">Wird beim Speichern automatisch formatiert.</div>
               <div class="fmt-help" style="margin-top:6px">
                 <div class="fh-row"><code>**fett**</code><code>*kursiv*</code><code>__unterstr__</code><code>~~durch~~</code><code>\`code\`</code></div>
@@ -1471,9 +1544,19 @@ function renderStats(){
 /* ═══════════════════════════════════════
    SETTINGS
 ═══════════════════════════════════════ */
+let kiTab='syntax';
+function kiSwitch(tab){kiTab=tab;renderPN();}
+function copyKiPrompt(){
+  const txt=document.getElementById('ki-prompt-text').textContent;
+  navigator.clipboard.writeText(txt).then(()=>toast('📋 Prompt kopiert'));
+}
+
 function renderSettings(){
-  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  let h=`<div class="page-hdr"><span class="page-title">Einstellungen</span></div>
+  const kiPrompt='Formatiere den folgenden Vorlesungsinhalt für mein Lernportal.\n\nSTRUKTUR-REGELN:\n- Hauptabschnitte mit römischen Ziffern: I. Titel\n- Unterabschnitte mit ##: ## Untertitel  \n- Nummerierte Punkte: 1. Text (oder * 1. Text)\n- Bullet Points: - Text\n- Eingerückte Unterpunkte: 3 Leerzeichen + - Text\n- Trennlinien zwischen Hauptabschnitten: ---\n\nINLINE-FORMATIERUNG:\n- Wichtige Begriffe: **Begriff**\n- Definitionen/Formeln: := Formel oder Gleichung\n- Hinweise: > Hinweistext\n- Warnungen/Wichtig: !> Wichtiger Hinweis\n- Gelb hervorheben: ==Text==\n- Fachbegriffe auf Englisch: *Begriff*\n- Mathe-Variablen: $Variable$\n\nAUSGABE-FORMAT:\n- Kein Fließtext – alles in Bullet Points oder nummerierte Listen\n- Jeder Hauptgedanke = eigene Zeile\n- Leere Zeile zwischen Abschnitten\n- Keine Markdown-Backticks oder andere nicht unterstützte Syntax\n\nHier ist der Inhalt:\n[INHALT HIER EINFÜGEN]';
+  let h=`
+  <div class="page-hdr"><span class="page-title">Einstellungen</span></div>
+
+  <!-- Darstellung -->
   <div class="settings-card">
     <h4>Darstellung</h4>
     <div class="set-row">
@@ -1485,7 +1568,7 @@ function renderSettings(){
       </div>
     </div>
     <div class="set-row">
-      <div class="set-info"><div class="set-label">Schriftgröße</div><div class="set-sub">Textgröße anpassen</div></div>
+      <div class="set-info"><div class="set-label">Schriftgröße</div></div>
       <div class="fs-btns">
         <button class="fs-btn${fontSize==='sm'?' active':''}" onclick="setFs('sm')">Klein</button>
         <button class="fs-btn${fontSize==='md'?' active':''}" onclick="setFs('md')">Normal</button>
@@ -1493,28 +1576,108 @@ function renderSettings(){
       </div>
     </div>
   </div>
+
+  <!-- KI Formatierungsreferenz -->
+  <div class="settings-card" style="padding:0;overflow:hidden">
+    <div style="padding:14px 18px 0;background:var(--s2);border-bottom:1px solid var(--border2)">
+      <h4 style="margin-bottom:10px">🤖 KI-Formatierungsreferenz</h4>
+      <p style="font-size:var(--fs-sm);color:var(--text3);margin-bottom:10px">Gib dieser Referenz an eine KI (z.B. Claude) damit sie Inhalte perfekt für dein Portal formatiert.</p>
+      <div class="ki-ref-tabs">
+        <button class="ki-tab${kiTab==='syntax'?' active':''}" onclick="kiSwitch('syntax')">Syntax-Tabelle</button>
+        <button class="ki-tab${kiTab==='prompt'?' active':''}" onclick="kiSwitch('prompt')">KI-Prompt</button>
+        <button class="ki-tab${kiTab==='beispiel'?' active':''}" onclick="kiSwitch('beispiel')">Beispiel</button>
+      </div>
+    </div>
+    <div class="ki-ref-body">
+
+      <!-- TAB: Syntax -->
+      <div class="ki-section${kiTab==='syntax'?' active':''}">
+        <table class="ki-table">
+          <tr><th>Eingabe</th><th>Ergebnis</th><th>Verwendung</th></tr>
+          <tr><td>I. Titel</td><td>Große Überschrift (H1)</td><td>Hauptabschnitte mit röm. Ziffern</td></tr>
+          <tr><td>## Titel</td><td>Mittlere Überschrift (H2)</td><td>Unterabschnitte</td></tr>
+          <tr><td>- Text</td><td>• Bullet Point</td><td>Aufzählungen</td></tr>
+          <tr><td>&nbsp;&nbsp;&nbsp;- Text</td><td>◦ Unterpunkt</td><td>Eingerückte Sub-Bullets</td></tr>
+          <tr><td>1. Text</td><td>1. 2. 3. Liste</td><td>Nummerierte Schritte</td></tr>
+          <tr><td>* 1. Text</td><td>Num. Liste mit Bullet</td><td>Gemischte Bullet+Zahl</td></tr>
+          <tr><td>---</td><td>Trennlinie</td><td>Abschnitte trennen</td></tr>
+          <tr><td>:= Formel</td><td>Formelblock</td><td>Gleichungen, Definitionen</td></tr>
+          <tr><td>> Text</td><td>Blauer Hinweis</td><td>Tipps, Erklärungen</td></tr>
+          <tr><td>!> Text</td><td>Gelbe Warnung</td><td>Wichtige Hinweise</td></tr>
+          <tr><td>**Text**</td><td><strong>Fett</strong></td><td>Schlüsselbegriffe</td></tr>
+          <tr><td>*Text*</td><td><em>Kursiv</em></td><td>Fachbegriffe, Fremdwörter</td></tr>
+          <tr><td>__Text__</td><td><u>Unterstrichen</u></td><td>Definitionen</td></tr>
+          <tr><td>~~Text~~</td><td><s>Durchgestrichen</s></td><td>Veraltetes, Korrekturen</td></tr>
+          <tr><td>==Text==</td><td><span style="background:#ffe066;color:#2a2400;border-radius:3px;padding:0 3px">Gelb markiert</span></td><td>Prüfungsrelevantes</td></tr>
+          <tr><td>$$Text$$</td><td><span style="background:#c6f0a2;color:#1a4208;border-radius:3px;padding:0 3px">Grün markiert</span></td><td>Definitionen</td></tr>
+          <tr><td>^^Text^^</td><td><span style="background:#bde0fc;color:#0d3d6e;border-radius:3px;padding:0 3px">Blau markiert</span></td><td>Merksätze</td></tr>
+          <tr><td>!!Text!!</td><td><span style="background:#ffc9c9;color:#6b0000;border-radius:3px;padding:0 3px">Rot markiert</span></td><td>Fehler, Ausnahmen</td></tr>
+          <tr><td>[[Text]]</td><td><span style="border:1.5px solid var(--border3);border-radius:4px;padding:0 4px">Rahmen</span></td><td>Begriffe einrahmen</td></tr>
+          <tr><td>$x$</td><td><span style="font-family:'DM Mono',monospace;font-style:italic;color:var(--blue3)">x</span></td><td>Mathe-Variablen</td></tr>
+          <tr><td>\`Code\`</td><td><code>Code</code></td><td>Technische Begriffe</td></tr>
+          <tr><td>img:url|Caption</td><td>Bild mit Unterschrift</td><td>Fotos, Diagramme</td></tr>
+        </table>
+      </div>
+
+      <!-- TAB: Prompt -->
+      <div class="ki-section${kiTab==='prompt'?' active':''}">
+        <p style="font-size:var(--fs-sm);color:var(--text3);margin-bottom:10px">Kopiere diesen Prompt und füge deinen Vorlesungsinhalt am Ende ein:</p>
+        <div class="ki-prompt" id="ki-prompt-text">${escHtml(kiPrompt)}</div>
+        <button class="ki-copy-btn" onclick="copyKiPrompt()">📋 Prompt kopieren</button>
+      </div>
+
+      <!-- TAB: Beispiel -->
+      <div class="ki-section${kiTab==='beispiel'?' active':''}">
+        <p style="font-size:var(--fs-sm);color:var(--text3);margin-bottom:12px">So sieht korrekt formatierter Text aus:</p>
+        <div class="ki-prompt" style="font-size:12px">I. Marktgleichgewicht
+## Definition
+:= Gleichgewichtspreis = Preis bei dem Angebot = Nachfrage
+
+- Angebotskurve steigt mit dem Preis
+- Nachfragekurve fällt mit dem Preis
+  - Ausnahme: **Giffen-Güter** (steigen bei höherem Preis)
+
+---
+
+## Mathematische Darstellung
+1. Angebotsfunktion: $Q_s = a + b \cdot P$
+2. Nachfragefunktion: $Q_d = c - d \cdot P$
+3. Gleichgewicht: $Q_s = Q_d$ → ==Merke!==
+
+> Im Gleichgewicht gibt es weder Überschussnachfrage noch Überschussangebot.
+!> Prüfungsrelevant: Unterschied zwischen Bewegung entlang der Kurve und Kurvenverschiebung!</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Daten -->
   <div class="settings-card">
     <h4>Daten</h4>
     <div class="set-row">
-      <div class="set-info"><div class="set-label">Export</div><div class="set-sub">Alle Daten als JSON herunterladen</div></div>
+      <div class="set-info"><div class="set-label">Export</div><div class="set-sub">Alle Daten als JSON-Backup</div></div>
       <button class="tbtn" onclick="exportData()">↓ Exportieren</button>
     </div>
     <div class="set-row">
-      <div class="set-info"><div class="set-label">Import</div><div class="set-sub">Backup-Datei wiederherstellen</div></div>
+      <div class="set-info"><div class="set-label">Import</div><div class="set-sub">Backup wiederherstellen</div></div>
       <label class="tbtn" style="cursor:pointer">↑ Importieren<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
     </div>
   </div>
+
+  <!-- Shortcuts -->
   <div class="settings-card">
     <h4>Tastaturkürzel</h4>
-    <div class="set-row"><div class="set-label"><span class="kbd">/</span> Suche fokussieren</div></div>
-    <div class="set-row"><div class="set-label"><span class="kbd">Esc</span> Modal schließen / Suche leeren</div></div>
-    <div class="set-row"><div class="set-label"><span class="kbd">⌘↵</span> In Modal speichern</div></div>
+    <div class="set-row"><div class="set-label"><span class="kbd">/</span>&nbsp; Suche</div></div>
+    <div class="set-row"><div class="set-label"><span class="kbd">Esc</span>&nbsp; Modal schließen</div></div>
+    <div class="set-row"><div class="set-label"><span class="kbd">⌘↵</span>&nbsp; Speichern</div></div>
   </div>
+
+  <!-- Danger zone -->
   <div class="settings-card" style="border-color:var(--red3)">
     <h4 style="color:var(--red)">Gefahrenzone</h4>
     <div class="set-row">
-      <div class="set-info"><div class="set-label">Alle Daten löschen</div><div class="set-sub">Setzt das Portal komplett zurück. Nicht rückgängig zu machen.</div></div>
-      <button class="tbtn" style="border-color:var(--red3);color:var(--red)" onclick="if(confirm('Wirklich alle Daten löschen?')){localStorage.clear();location.reload();}">Alles löschen</button>
+      <div class="set-info"><div class="set-label">Alle Daten löschen</div><div class="set-sub">Nicht rückgängig zu machen.</div></div>
+      <button class="tbtn" style="border-color:var(--red3);color:var(--red)" onclick="if(confirm('Wirklich alles löschen?')){localStorage.clear();location.reload();}">Alles löschen</button>
     </div>
   </div>`;
   document.getElementById('pn').innerHTML=h;
@@ -1851,6 +2014,30 @@ render();
     hideToolbar();
   };
 })();
+
+/* ═══════════════════════════════════════
+   IMAGE UPLOAD → base64 inline
+═══════════════════════════════════════ */
+function insertImgInline(event, taId){
+  const file=event.target.files[0];
+  if(!file)return;
+  if(file.size>3*1024*1024){toast('Bild zu groß (max. 3 MB)');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const ta=document.getElementById(taId);
+    if(!ta)return;
+    const caption=prompt('Bildunterschrift (optional):','')||'';
+    const tag=`img:${e.target.result}${caption?'|'+caption:''}`;
+    const pos=ta.selectionEnd;
+    ta.value=ta.value.slice(0,pos)+'\n'+tag+'\n'+ta.value.slice(pos);
+    ta.selectionStart=ta.selectionEnd=pos+tag.length+2;
+    ta.focus();
+    toast('📷 Bild eingefügt');
+  };
+  reader.readAsDataURL(file);
+  event.target.value='';
+}
+
 </script>
 
 <!-- ── Format selection toolbar ── -->
