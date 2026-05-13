@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lernportal · Noah Cortese</title>
+<title>Studienportal · Noah Cortese</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════
@@ -827,6 +827,21 @@ body {
   transition: all .12s; margin-top: 4px;
 }
 .add-group-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue2); }
+
+/* ── Workspaces ── */
+.ws-block { margin-bottom: 2px; }
+.ws-header {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 8px; border-radius: var(--r);
+  cursor: pointer; transition: background .1s; user-select: none;
+}
+.ws-header:hover { background: var(--s2); }
+.ws-icon { font-size: 14px; flex-shrink: 0; }
+.ws-name { font-size: 11px; font-weight: 600; color: var(--text2); flex: 1; letter-spacing: .02em; text-transform: uppercase; }
+.ws-count { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; }
+.ws-chev { font-size: 11px; color: var(--text3); transition: transform .2s; }
+.ws-chev.open { transform: rotate(-90deg); }
+.ws-mods { padding-left: 10px; border-left: 1.5px solid var(--border2); margin-left: 12px; margin-bottom: 4px; }
 </style>
 </head>
 <body>
@@ -837,7 +852,7 @@ body {
     <a class="brand" href="#" onclick="return false">
       <span class="brand-dot"></span>
       <div class="brand-block">
-        <span class="brand-logo">Lernportal</span>
+        <span class="brand-logo">Studienportal</span>
         <span class="brand-user">Noah Cortese</span>
       </div>
     </a>
@@ -865,11 +880,9 @@ body {
   <div class="content">
     <!-- ── SIDEBAR ── -->
     <nav class="sidebar">
-      <p class="sb-label">Module</p>
       <div id="sb-mods"></div>
-      <button class="sb-add" onclick="openModModal(null)">＋ Modul hinzufügen</button>
+      <button class="sb-add" onclick="openWsModal(null)" style="margin-top:4px;border-top:.5px solid var(--border);padding-top:8px">＋ Bereich hinzufügen</button>
       <div class="sb-div"></div>
-      <p class="sb-label">Bereiche</p>
       <button class="sb-navbtn" id="nav-stundenplan" onclick="goView('stundenplan')"><span class="nav-icon">📅</span><span>Stundenplan</span></button>
       <button class="sb-navbtn" id="nav-notizen"     onclick="goView('notizen')"    ><span class="nav-icon">📝</span><span>Notizen</span></button>
       <button class="sb-navbtn" id="nav-stats"       onclick="goView('stats')"      ><span class="nav-icon">📊</span><span>Statistik</span></button>
@@ -893,6 +906,7 @@ body {
   <h3 id="m-mod-h">Neues Modul</h3>
   <label>Name</label><input id="mod-name" placeholder="z.B. Investition & Finanzierung"/>
   <label>Kürzel <span class="hint">(max. 6 Zeichen)</span></label><input id="mod-short" placeholder="z.B. InFi" maxlength="6"/>
+  <label>Bereich</label><select id="mod-ws-select" style="margin-bottom:4px"></select>
   <label>Farbe</label><div class="color-grid" id="cgrid"></div>
   <div class="modal-footer">
     <button class="btn-del" id="mod-del-btn" style="display:none" onclick="reqDelMod()">Modul löschen</button>
@@ -1072,6 +1086,13 @@ if(!S.__mods){S.__mods=DEF.map(m=>({...m}));DEF.forEach(m=>{if(!S[m.id])S[m.id]=
 S.__mods.forEach(m=>{if(!S[m.id])S[m.id]=[];});
 if(!S.__sp)S.__sp={};
 if(!S.__notes)S.__notes={};
+if(!S.__workspaces){
+  S.__workspaces=[{id:'ws_default',name:'Universität',icon:'🎓',ci:0}];
+  S.__mods.forEach(m=>{if(!m.wsId)m.wsId='ws_default';});
+}
+S.__mods.forEach(m=>{if(!m.wsId)m.wsId=S.__workspaces[0]?.id||'ws_default';});
+var curWs=localStorage.getItem('lp_ws')||S.__workspaces[0]?.id||'ws_default';
+function getWs(id){return S.__workspaces.find(w=>w.id===id);}
 
 let cur=localStorage.getItem('lp_cur')||S.__mods[0]?.id||'';
 if(!S.__mods.find(m=>m.id===cur))cur=S.__mods[0]?.id||'';
@@ -1406,15 +1427,45 @@ function renderSearch(){
    SIDEBAR
 ═══════════════════════════════════════ */
 function renderSB(){
-  document.getElementById('sb-mods').innerHTML=S.__mods.map(m=>{
-    const c=col(m.ci),p=modProgress(m.id),n=(S[m.id]||[]).length;
-    return `<button class="mod-btn${m.id===cur&&view==='module'?' active':''}" onclick="goMod('${m.id}')">
-      <span class="mod-dot" style="background:${c.c}"></span>
-      <span class="mod-name">${escHtml(m.label)}</span>
-      <span class="mod-meta">${n?`<span class="mod-count">${n}</span>`:''}${p.tot>0?progRing(p.pct,c.c):''}</span>
-      <button class="sb-edit" onclick="event.stopPropagation();openModModal('${m.id}')">✎</button>
-    </button>`;
-  }).join('');
+  const sbMods=document.getElementById('sb-mods');
+  if(!sbMods)return;
+  // Ensure workspaces exist
+  if(!S.__workspaces){
+    S.__workspaces=[{id:'ws_default',name:'Universität',icon:'🎓',ci:0}];
+    S.__mods.forEach(m=>{if(!m.wsId)m.wsId='ws_default';});
+  }
+  S.__mods.forEach(m=>{if(!m.wsId)m.wsId=S.__workspaces[0]?.id||'ws_default';});
+  if(!window.curWs)window.curWs=S.__workspaces[0]?.id||'ws_default';
+
+  let h='';
+  S.__workspaces.forEach(ws=>{
+    const wsMods=S.__mods.filter(m=>m.wsId===ws.id);
+    const collapsed=(S.__wsCollapsed||{})[ws.id];
+    h+=`<div class="ws-block">
+      <div class="ws-header" onclick="toggleWsCollapse('${ws.id}')">
+        <span class="ws-icon">${ws.icon||'📁'}</span>
+        <span class="ws-name">${escHtml(ws.name)}</span>
+        <span class="ws-count">${wsMods.length}</span>
+        <button class="sb-edit" style="opacity:.7" onclick="event.stopPropagation();openWsModal('${ws.id}')">✎</button>
+        <span class="ws-chev${collapsed?' open':''}">▾</span>
+      </div>`;
+    if(!collapsed){
+      h+=`<div class="ws-mods">`;
+      wsMods.forEach(m=>{
+        const c=col(m.ci),p=modProgress(m.id),n=(S[m.id]||[]).length;
+        h+=`<button class="mod-btn${m.id===cur&&view==='module'?' active':''}" onclick="goMod('${m.id}')">
+          <span class="mod-dot" style="background:${c.c}"></span>
+          <span class="mod-name">${escHtml(m.label)}</span>
+          <span class="mod-meta">${n?`<span class="mod-count">${n}</span>`:''}${p.tot>0?progRing(p.pct,c.c):''}</span>
+          <button class="sb-edit" onclick="event.stopPropagation();openModModal('${m.id}')">✎</button>
+        </button>`;
+      });
+      h+=`<button class="sb-add" style="padding-left:6px" onclick="openModModalInWs('${ws.id}')">＋ Modul</button>`;
+      h+=`</div>`;
+    }
+    h+=`</div>`;
+  });
+  sbMods.innerHTML=h;
   ['stundenplan','notizen','stats','settings'].forEach(v=>{
     document.getElementById('nav-'+v)?.classList.toggle('active',view===v);
   });
@@ -1474,7 +1525,48 @@ function renderModule(){
       if(vo){
         h+=`<div class="vl-detail">`;
         if(v.intro)h+=`<div class="rich" style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)">${renderRich(v.intro)}</div>`;
-        h+=renderGrouped(cur,v,c)+'</div>';
+        // ── Abschnitte rendern (mit optionalen Gruppen) ──
+        const groups=v.groups||[];
+        const secs=v.secs||[];
+
+        if(!groups.length){
+          // Keine Gruppen: flach rendern
+          secs.forEach((s,si)=>{
+            h+=renderSecCard(cur,v.id,s,si,secs.length,c);
+          });
+          h+=`<div class="action-row">
+            <button class="act-btn" onclick="openSECModal(null,'${cur}','${v.id}')">＋ Abschnitt</button>
+            <button class="act-btn" onclick="openAddGrp('${cur}','${v.id}')">＋ Gruppe</button>
+          </div>`;
+        } else {
+          const groupedIds=new Set(groups.flatMap(g=>g.secIds||[]));
+          const ungrouped=secs.filter(s=>!groupedIds.has(s.id));
+          if(ungrouped.length){
+            h+=`<div class="sec-group grp-default" style="border-style:dashed;margin-bottom:8px">
+              <div class="sec-group-hdr"><span class="grp-label" style="opacity:.55">Nicht zugeordnet</span></div>
+              <div class="sec-group-body">`;
+            ungrouped.forEach((s,si)=>{ h+=renderSecCard(cur,v.id,s,secs.indexOf(s),secs.length,c); });
+            h+=`</div></div>`;
+          }
+          groups.forEach(g=>{
+            const grpSecs=secs.filter(s=>(g.secIds||[]).includes(s.id));
+            h+=`<div class="sec-group grp-${g.style||'default'}">
+              <div class="sec-group-hdr">
+                <span class="grp-label">📁 ${escHtml(g.name)}</span>
+                <span style="font-size:var(--fs-xs);color:var(--text3);font-family:'DM Mono',monospace">${grpSecs.length} Abschnitt${grpSecs.length!==1?'e':''}</span>
+                <button class="grp-edit-btn" onclick="openEditGrp('${cur}','${v.id}','${g.id}')">✎</button>
+              </div>
+              <div class="sec-group-body">`;
+            grpSecs.forEach((s,si)=>{ h+=renderSecCard(cur,v.id,s,secs.indexOf(s),secs.length,c); });
+            h+=`<button class="act-btn" style="margin:4px 0 2px" onclick="openSECModalInGroup('${cur}','${v.id}','${g.id}')">＋ Abschnitt in Gruppe</button>`;
+            h+=`</div></div>`;
+          });
+          h+=`<div class="action-row">
+            <button class="act-btn" onclick="openSECModal(null,'${cur}','${v.id}')">＋ Abschnitt</button>
+            <button class="act-btn" onclick="openAddGrp('${cur}','${v.id}')">＋ Gruppe</button>
+          </div>`;
+        }
+        h+='</div>';
       }
       h+=`</div>`;
     });
@@ -1846,6 +1938,13 @@ function openModModal(id){
   _eMod=id;
   if(id){const md=getMod(id);_sci=md.ci;document.getElementById('m-mod-h').textContent='Modul bearbeiten';document.getElementById('mod-name').value=md.label;document.getElementById('mod-short').value=md.short||'';document.getElementById('mod-del-btn').style.display='inline-flex';}
   else{_sci=S.__mods.length%COLORS.length;document.getElementById('m-mod-h').textContent='Neues Modul';document.getElementById('mod-name').value='';document.getElementById('mod-short').value='';document.getElementById('mod-del-btn').style.display='none';}
+  // Populate workspace select
+  const wsSelect=document.getElementById('mod-ws-select');
+  if(wsSelect){
+    wsSelect.innerHTML=S.__workspaces.map(w=>`<option value="${w.id}">${w.icon||'📁'} ${escHtml(w.name)}</option>`).join('');
+    if(id){const md=getMod(id);wsSelect.value=md.wsId||S.__workspaces[0]?.id;}
+    else{wsSelect.value=window._pendingWs||curWs||S.__workspaces[0]?.id;}
+  }
   buildGrid(_sci);openM('m-mod');setTimeout(()=>document.getElementById('mod-name').focus(),80);
 }
 function saveMod(){
@@ -2098,7 +2197,192 @@ function insertImgInline(event, taId){
   event.target.value='';
 }
 
+/* ═══════════════════════════════════════
+   RENDER SEC CARD
+═══════════════════════════════════════ */
+function renderSecCard(modId,vlId,s,si,total,c){
+  const so=openSEC.has(s.id),se=editSEC.has(s.id);
+  let h=`<div class="sec${s.done?' done-sec':''}">
+    <div class="sec-hdr" onclick="togSEC('${s.id}')">
+      <span class="sec-nr">${s.nr}</span>
+      <span class="sec-title">${escHtml(s.titel)}</span>
+      ${prioBadge(s.prio)}
+      <button class="done-btn${s.done?' is-done':''}" onclick="event.stopPropagation();toggleDone('${modId}','${vlId}','${s.id}')">${s.done?'↩ Zurücksetzen':'✓ Gelernt'}</button>
+      <button class="sec-icon-btn" onclick="event.stopPropagation();toggleSecEdit('${s.id}')" title="Bearbeiten">✎</button>
+      <button class="sec-icon-btn" onclick="event.stopPropagation();showSECMenu(event,'${modId}','${vlId}','${s.id}',${si},${total})">⋯</button>
+      <span class="chev${so?' open':''}">▼</span>
+    </div>`;
+  if(se){
+    const st=escHtml(s.text||'');
+    const sl=escHtml(s.lz||'');
+    const stit=(s.titel||'').replace(/"/g,'&quot;');
+    h+=`<div class="sec-edit">
+      <div class="sec-edit-row">
+        <div><label>Titel</label><input id="ei-t-${s.id}" value="${stit}"/></div>
+        <div><label>Priorität</label><select id="ei-p-${s.id}">
+          <option value=""${!s.prio?' selected':''}>— keine —</option>
+          <option value="k"${s.prio==='k'?' selected':''}>Kritisch</option>
+          <option value="h"${s.prio==='h'?' selected':''}>Hoch</option>
+          <option value="m"${s.prio==='m'?' selected':''}>Mittel</option>
+        </select></div>
+      </div>
+      <label>Lernziel</label>
+      <input id="ei-l-${s.id}" value="${sl}" placeholder="Ich kann…"/>
+      <label>Inhalt</label>
+      <textarea id="ei-x-${s.id}">${st}</textarea>
+      <label style="cursor:pointer" class="img-upload-btn">
+        📷 Bild einfügen
+        <input type="file" accept="image/*" style="display:none" onchange="insertImgInline(event,'ei-x-${s.id}')">
+      </label>
+      <div class="auto-note">Wird beim Speichern automatisch formatiert.</div>
+      <div class="fmt-help" style="margin-top:6px">
+        <div class="fh-row"><code>**fett**</code><code>*kursiv*</code><code>__unterstr__</code><code>~~durch~~</code></div>
+        <div class="fh-row" style="margin-top:3px"><code>==gelb==</code>&nbsp;<code>$$grün$$</code>&nbsp;<code>^^blau^^</code>&nbsp;<code>!!rot!!</code>&nbsp;<code>[[rahmen]]</code></div>
+        <div class="fh-row" style="margin-top:3px"><code>## H</code>&nbsp;<code>- Liste</code>&nbsp;<code>1. Num.</code>&nbsp;<code>&gt; Info</code>&nbsp;<code>!&gt; Wichtig</code>&nbsp;<code>:= Formel</code></div>
+      </div>
+      <div class="sec-edit-actions">
+        <button class="se-del" onclick="reqDelSECInline('${modId}','${vlId}','${s.id}')">Löschen</button>
+        <button class="se-cancel" onclick="editSEC.delete('${s.id}');renderPN()">Abbrechen</button>
+        <button class="se-save" onclick="saveInlineSEC('${modId}','${vlId}','${s.id}')">Speichern</button>
+      </div>
+    </div>`;
+  } else if(so){
+    h+=`<div class="sec-body">`;
+    if(s.lz)h+=`<div class="lz">Lernziel: ${escHtml(s.lz)}</div>`;
+    if(s.text)h+=`<div class="rich">${renderRich(s.text)}</div>`;
+    h+=`</div>`;
+  }
+  h+=`</div>`;
+  return h;
+}
+
+/* ═══════════════════════════════════════
+   GROUPS
+═══════════════════════════════════════ */
+let _gMod=null,_gVL=null,_eGrp=null;
+function getGrp(mi,vi,gi){ return (getVL(mi,vi)?.groups||[]).find(g=>g.id===gi); }
+
+function openAddGrp(modId,vlId){
+  _gMod=modId;_gVL=vlId;_eGrp=null;
+  document.getElementById('m-grp-h').textContent='Neue Gruppe';
+  document.getElementById('grp-name').value='';
+  document.getElementById('grp-style').value='default';
+  document.getElementById('grp-del-btn').style.display='none';
+  openM('m-grp');
+  setTimeout(()=>document.getElementById('grp-name').focus(),80);
+}
+function openEditGrp(modId,vlId,grpId){
+  _gMod=modId;_gVL=vlId;_eGrp=grpId;
+  const g=getGrp(modId,vlId,grpId);
+  document.getElementById('m-grp-h').textContent='Gruppe bearbeiten';
+  document.getElementById('grp-name').value=g.name||'';
+  document.getElementById('grp-style').value=g.style||'default';
+  document.getElementById('grp-del-btn').style.display='inline-flex';
+  openM('m-grp');
+  setTimeout(()=>document.getElementById('grp-name').focus(),80);
+}
+function saveGrp(){
+  const name=document.getElementById('grp-name').value.trim();if(!name)return;
+  const style=document.getElementById('grp-style').value;
+  const vl=getVL(_gMod,_gVL);
+  if(!vl.groups)vl.groups=[];
+  if(_eGrp){
+    const g=vl.groups.find(g=>g.id===_eGrp);
+    g.name=name;g.style=style;
+  } else {
+    vl.groups.push({id:uid(),name,style,secIds:[]});
+  }
+  save();closeM('m-grp');renderPN();
+}
+function reqDelGrp(){
+  const vl=getVL(_gMod,_gVL);
+  vl.groups=(vl.groups||[]).filter(g=>g.id!==_eGrp);
+  save();closeM('m-grp');renderPN();toast('Gruppe gelöscht');
+}
+function openSECModalInGroup(modId,vlId,grpId){
+  window._pendingGrp={modId,vlId,grpId};
+  openSECModal(null,modId,vlId);
+}
+
+/* ═══════════════════════════════════════
+   WORKSPACES (Uni / Arbeit / Leben etc.)
+═══════════════════════════════════════ */
+// workspace init moved above
+
+// Workspace-aware sidebar rendering
+// (renderSB defined above)
+
+// Override saveMod// Override saveMod to assign workspace
+const _origSaveMod=saveMod;
+function saveMod(){
+  const label=document.getElementById('mod-name').value.trim();if(!label)return;
+  const short=document.getElementById('mod-short').value.trim()||label.slice(0,5);
+  if(_eMod){
+    const md=getMod(_eMod);
+    md.label=label;md.short=short;md.ci=_sci;
+    // Allow changing workspace
+    const wsSelect=document.getElementById('mod-ws-select');
+    if(wsSelect)md.wsId=wsSelect.value;
+  } else {
+    const id='mod_'+uid();
+    const wsId=window._pendingWs||curWs||S.__workspaces[0]?.id;
+    S.__mods.push({id,label,short,ci:_sci,wsId});
+    S[id]=[];cur=id;view='module';
+    localStorage.setItem('lp_cur',cur);
+    window._pendingWs=null;
+  }
+  save();closeM('m-mod');render();
+}
+
+// Workspace modal
+let _eWs=null;
+function openWsModal(wsId){
+  _eWs=wsId||null;
+  const ws=wsId?getWs(wsId):null;
+  document.getElementById('ws-name-inp').value=ws?ws.name:'';
+  document.getElementById('ws-icon-inp').value=ws?ws.icon:'📁';
+  document.getElementById('m-ws-h').textContent=ws?'Bereich bearbeiten':'Neuer Bereich';
+  document.getElementById('ws-del-btn').style.display=ws&&S.__workspaces.length>1?'inline-flex':'none';
+  openM('m-ws');
+  setTimeout(()=>document.getElementById('ws-name-inp').focus(),80);
+}
+function saveWs(){
+  const name=document.getElementById('ws-name-inp').value.trim();if(!name)return;
+  const icon=document.getElementById('ws-icon-inp').value.trim()||'📁';
+  if(_eWs){
+    const ws=getWs(_eWs);ws.name=name;ws.icon=icon;
+  } else {
+    const id='ws_'+uid();
+    S.__workspaces.push({id,name,icon,ci:S.__workspaces.length%COLORS.length});
+    curWs=id;localStorage.setItem('lp_ws',id);
+  }
+  save();closeM('m-ws');render();
+}
+function delWs(){
+  if(!_eWs||S.__workspaces.length<=1){toast('Mindestens ein Bereich muss vorhanden sein');return;}
+  // Reassign mods to first remaining workspace
+  const remaining=S.__workspaces.filter(w=>w.id!==_eWs);
+  S.__mods.filter(m=>m.wsId===_eWs).forEach(m=>m.wsId=remaining[0].id);
+  S.__workspaces=remaining;
+  curWs=remaining[0].id;localStorage.setItem('lp_ws',curWs);
+  save();closeM('m-ws');render();
+}
+
 </script>
+
+<!-- Workspace modal -->
+<div class="backdrop" id="m-ws"><div class="modal">
+  <h3 id="m-ws-h">Neuer Bereich</h3>
+  <label>Name <span class="hint">(z.B. Universität, Arbeit, Privat)</span></label>
+  <input id="ws-name-inp" placeholder="z.B. Universität"/>
+  <label>Icon <span class="hint">(Emoji)</span></label>
+  <input id="ws-icon-inp" placeholder="🎓" style="font-size:18px;max-width:80px"/>
+  <div class="modal-footer">
+    <button class="btn-del" id="ws-del-btn" style="display:none" onclick="delWs()">Bereich löschen</button>
+    <button class="btn-cancel" onclick="closeM('m-ws')">Abbrechen</button>
+    <button class="btn-save" onclick="saveWs()">Speichern</button>
+  </div>
+</div></div>
 
 <!-- ── Format selection toolbar ── -->
 <div class="fmt-toolbar" id="fmt-toolbar">
