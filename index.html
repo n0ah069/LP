@@ -842,6 +842,50 @@ body {
 .ws-chev { font-size: 11px; color: var(--text3); transition: transform .2s; }
 .ws-chev.open { transform: rotate(-90deg); }
 .ws-mods { padding-left: 10px; border-left: 1.5px solid var(--border2); margin-left: 12px; margin-bottom: 4px; }
+
+/* ── Workspace collapse ── */
+.ws-mods { overflow: hidden; transition: max-height .25s ease; }
+.ws-chev { font-size: 12px; color: var(--text3); transition: transform .2s; line-height: 1; }
+.ws-chev.open { transform: rotate(-90deg); }
+
+/* ── Move module modal ── */
+.move-ws-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.move-ws-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border: 1px solid var(--border2);
+  border-radius: var(--r); cursor: pointer; transition: all .12s;
+  font-size: var(--fs); color: var(--text2); background: transparent;
+  font-family: inherit; width: 100%; text-align: left;
+}
+.move-ws-item:hover { background: var(--blue2); border-color: var(--blue); color: var(--blue); }
+.move-ws-item.current { background: var(--s2); color: var(--text3); cursor: default; }
+
+/* ── Rich text selection toolbar (read mode) ── */
+.rich-sel-bar {
+  position: fixed; z-index: 800;
+  background: var(--text); color: var(--bg);
+  border-radius: 10px; padding: 5px 6px;
+  display: none; align-items: center; gap: 2px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.25);
+  pointer-events: all; user-select: none;
+  transform: translateX(-50%) translateY(-100%);
+}
+.rich-sel-bar.vis { display: flex; }
+.rich-sel-bar::after {
+  content: ''; position: absolute; bottom: -5px; left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom: none; border-top-color: var(--text);
+}
+.rsb-btn {
+  padding: 4px 8px; border: none; border-radius: 6px;
+  background: transparent; color: var(--bg);
+  cursor: pointer; font-size: 12px; transition: background .1s;
+  line-height: 1; white-space: nowrap;
+}
+.rsb-btn:hover { background: rgba(255,255,255,.15); }
+.rsb-sep { width: 1px; height: 18px; background: rgba(255,255,255,.2); margin: 0 2px; }
+.rsb-hint { font-size: 10px; color: rgba(255,255,255,.5); padding: 0 4px; }
 </style>
 </head>
 <body>
@@ -910,6 +954,7 @@ body {
   <label>Farbe</label><div class="color-grid" id="cgrid"></div>
   <div class="modal-footer">
     <button class="btn-del" id="mod-del-btn" style="display:none" onclick="reqDelMod()">Modul löschen</button>
+    <button class="btn-cancel" id="mod-move-btn" style="display:none;border-color:var(--blue);color:var(--blue)" onclick="closeM('m-mod');openMoveWsModal(_eMod)">↗ Verschieben</button>
     <button class="btn-cancel" onclick="closeM('m-mod')">Abbrechen</button>
     <button class="btn-save" onclick="saveMod()">Speichern</button>
   </div>
@@ -2049,6 +2094,42 @@ function importData(event){
   r.readAsText(file);event.target.value='';
 }
 
+
+/* ═══════════════════════════════════════
+   WORKSPACE HELPERS
+═══════════════════════════════════════ */
+function toggleWsCollapse(wsId){
+  if(!S.__wsCollapsed)S.__wsCollapsed={};
+  S.__wsCollapsed[wsId]=!S.__wsCollapsed[wsId];
+  save();renderSB();
+}
+function openModModalInWs(wsId){
+  window._pendingWs=wsId;
+  openModModal(null);
+}
+
+/* ═══════════════════════════════════════
+   MOVE MODULE BETWEEN WORKSPACES
+═══════════════════════════════════════ */
+
+function openMoveWsModal(modId){
+  const md=getMod(modId);
+  document.getElementById('m-move-ws-h').textContent='„'+md.label+'" verschieben';
+  document.getElementById('move-ws-list').innerHTML=S.__workspaces.map(ws=>{
+    const isCur=ws.id===md.wsId;
+    return `<button class="move-ws-item${isCur?' current':''}" onclick="${isCur?'':'moveModToWs(\''+modId+'\',\''+ws.id+'\');closeM(\'m-move-ws\')'}">
+      <span style="font-size:18px">${ws.icon||'📁'}</span>
+      <span>${escHtml(ws.name)}${isCur?' (aktuell)':''}</span>
+    </button>`;
+  }).join('');
+  openM('m-move-ws');
+}
+function moveModToWs(modId, wsId){
+  const md=getMod(modId);
+  if(md)md.wsId=wsId;
+  save();renderSB();toast('Modul verschoben');
+}
+
 /* ═══════════════════════════════════════
    INIT
 ═══════════════════════════════════════ */
@@ -2368,6 +2449,68 @@ function delWs(){
   save();closeM('m-ws');render();
 }
 
+/* ═══════════════════════════════════════
+   RICH TEXT READ-MODE SELECTION BAR
+   Shows formatting hint when text is
+   selected in a rendered .rich div
+═══════════════════════════════════════ */
+(function(){
+  const bar=document.createElement('div');
+  bar.className='rich-sel-bar';
+  bar.id='rich-sel-bar';
+  bar.innerHTML=`
+    <span class="rsb-hint">Text kopiert – öffne Abschnitt zum Bearbeiten:</span>
+    <div class="rsb-sep"></div>
+    <button class="rsb-btn" title="Fett" onclick="richSelApply('**','**')"><strong>B</strong></button>
+    <button class="rsb-btn" title="Kursiv" onclick="richSelApply('*','*')"><em>I</em></button>
+    <button class="rsb-btn" title="Unterstrichen" onclick="richSelApply('__','__')"><u>U</u></button>
+    <button class="rsb-btn" title="Durchgestrichen" onclick="richSelApply('~~','~~')"><s>S</s></button>
+    <div class="rsb-sep"></div>
+    <button class="rsb-btn" style="background:#ffe066;color:#2a2400;border-radius:4px" onclick="richSelApply('==','==')">A</button>
+    <button class="rsb-btn" style="background:#c6f0a2;color:#1a4208;border-radius:4px" onclick="richSelApply('$$','$$')">A</button>
+    <button class="rsb-btn" style="background:#bde0fc;color:#0d3d6e;border-radius:4px" onclick="richSelApply('^^','^^')">A</button>
+    <button class="rsb-btn" style="background:#ffc9c9;color:#6b0000;border-radius:4px" onclick="richSelApply('!!','!!')">A</button>
+    <div class="rsb-sep"></div>
+    <button class="rsb-btn" onclick="richSelBar.classList.remove('vis')">✕</button>
+  `;
+  document.body.appendChild(bar);
+  window.richSelBar=bar;
+
+  let _richMod=null,_richVL=null,_richSEC=null,_selText='';
+
+  document.addEventListener('mouseup',e=>{
+    setTimeout(()=>{
+      const sel=window.getSelection();
+      if(!sel||sel.isCollapsed){
+        if(!bar.contains(e.target))bar.classList.remove('vis');
+        return;
+      }
+      const txt=sel.toString().trim();
+      if(!txt){bar.classList.remove('vis');return;}
+      // Check if selection is inside a .rich div within a .sec-body
+      const richEl=sel.anchorNode?.parentElement?.closest('.sec-body .rich');
+      if(!richEl){bar.classList.remove('vis');return;}
+      _selText=txt;
+      // Find which section this is
+      const secEl=richEl.closest('.sec');
+      // Position bar above selection
+      const range=sel.getRangeAt(0);
+      const rect=range.getBoundingClientRect();
+      bar.style.left=(rect.left+rect.width/2)+'px';
+      bar.style.top=(rect.top+window.scrollY-8)+'px';
+      bar.classList.add('vis');
+      // Update hint to show selected text
+      bar.querySelector('.rsb-hint').textContent=`"${txt.slice(0,30)}${txt.length>30?'…':''}" – öffne ✎ zum Bearbeiten`;
+    },10);
+  });
+
+  // richSelApply: show toast explaining workflow
+  window.richSelApply=function(before,after){
+    bar.classList.remove('vis');
+    toast(`✎ Öffne den Abschnitt mit ✎ und markiere "${_selText.slice(0,20)}…" dann formatiere`);
+  };
+})();
+
 </script>
 
 <!-- Workspace modal -->
@@ -2381,6 +2524,16 @@ function delWs(){
     <button class="btn-del" id="ws-del-btn" style="display:none" onclick="delWs()">Bereich löschen</button>
     <button class="btn-cancel" onclick="closeM('m-ws')">Abbrechen</button>
     <button class="btn-save" onclick="saveWs()">Speichern</button>
+  </div>
+</div></div>
+
+<!-- Move module to workspace -->
+<div class="backdrop" id="m-move-ws"><div class="modal">
+  <h3 id="m-move-ws-h">Modul verschieben</h3>
+  <p style="font-size:var(--fs-sm);color:var(--text3);margin-top:4px">Wähle den Bereich in den das Modul verschoben werden soll:</p>
+  <div class="move-ws-list" id="move-ws-list"></div>
+  <div class="modal-footer">
+    <button class="btn-cancel" onclick="closeM('m-move-ws')">Abbrechen</button>
   </div>
 </div></div>
 
