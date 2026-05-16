@@ -93,7 +93,7 @@ body {
    LAYOUT
 ═══════════════════════════════════════ */
 .shell   { display: grid; grid-template-rows: 54px 1fr; height: 100vh; }
-.content { display: grid; grid-template-columns: 226px 1fr; height: 100%; overflow: hidden; }
+.content { display: grid; grid-template-columns: 252px 1fr; height: 100%; overflow: hidden; }
 
 /* ═══════════════════════════════════════
    TOPBAR
@@ -180,7 +180,7 @@ body {
 ═══════════════════════════════════════ */
 .sidebar {
   background: var(--surface); border-right: 1px solid var(--border2);
-  padding: 14px 10px; overflow-y: auto;
+  padding: 16px 12px; overflow-y: auto;
   display: flex; flex-direction: column; gap: 1px;
 }
 .sb-label {
@@ -192,7 +192,7 @@ body {
 
 .mod-btn {
   display: flex; align-items: center; gap: 9px;
-  padding: 7px 9px; border: none; border-radius: var(--r);
+  padding: 8px 10px; border: none; border-radius: var(--r);
   background: transparent; cursor: pointer; width: 100%;
   text-align: left; transition: background .12s; position: relative;
 }
@@ -200,7 +200,7 @@ body {
 .mod-btn.active { background: var(--s2); }
 .mod-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; transition: transform .2s; }
 .mod-btn.active .mod-dot { transform: scale(1.25); }
-.mod-name { font-size: var(--fs); color: var(--text); flex: 1; line-height: 1.3; text-align: left; }
+.mod-name { font-size: 13px; color: var(--text); flex: 1; line-height: 1.3; text-align: left; font-weight: 450; }
 .mod-meta { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .mod-count { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; }
 .sb-edit {
@@ -213,13 +213,13 @@ body {
 
 .sb-navbtn {
   display: flex; align-items: center; gap: 9px;
-  padding: 7px 9px; border: none; border-radius: var(--r);
+  padding: 8px 10px; border: none; border-radius: var(--r);
   background: transparent; cursor: pointer; width: 100%;
-  text-align: left; font-size: var(--fs); color: var(--text2);
+  text-align: left; font-size: 13px; color: var(--text2);
   font-family: inherit; transition: background .12s;
 }
 .sb-navbtn:hover, .sb-navbtn.active { background: var(--s2); color: var(--text); }
-.nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
 
 .sb-div { height: 1px; background: var(--border); margin: 6px 0; }
 .sb-add {
@@ -829,19 +829,19 @@ body {
 .add-group-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue2); }
 
 /* ── Workspaces ── */
-.ws-block { margin-bottom: 2px; }
+.ws-block { margin-bottom: 4px; }
 .ws-header {
-  display: flex; align-items: center; gap: 7px;
-  padding: 6px 8px; border-radius: var(--r);
-  cursor: pointer; transition: background .1s; user-select: none;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: var(--r);
+  cursor: pointer; transition: background .12s; user-select: none;
 }
 .ws-header:hover { background: var(--s2); }
-.ws-icon { font-size: 14px; flex-shrink: 0; }
-.ws-name { font-size: 11px; font-weight: 600; color: var(--text2); flex: 1; letter-spacing: .02em; text-transform: uppercase; }
-.ws-count { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; }
-.ws-chev { font-size: 11px; color: var(--text3); transition: transform .2s; }
+.ws-icon { font-size: 18px; flex-shrink: 0; line-height: 1; }
+.ws-name { font-size: 12px; font-weight: 700; color: var(--text); flex: 1; letter-spacing: .01em; }
+.ws-count { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; background: var(--s3); padding: 1px 6px; border-radius: 20px; }
+.ws-chev { font-size: 10px; color: var(--text3); transition: transform .2s; }
 .ws-chev.open { transform: rotate(-90deg); }
-.ws-mods { padding-left: 10px; border-left: 1.5px solid var(--border2); margin-left: 12px; margin-bottom: 4px; }
+.ws-mods { padding-left: 8px; border-left: 2px solid var(--border2); margin-left: 14px; margin-bottom: 6px; padding-top: 2px; }
 
 /* ── Workspace collapse ── */
 .ws-mods { overflow: hidden; transition: max-height .25s ease; }
@@ -967,7 +967,7 @@ body {
 </div></div>
 
 <div class="backdrop" id="m-vl"><div class="modal">
-  <h3 id="m-vl-h">Neue Vorlesung</h3>
+  <h3 id="m-vl-h">Neue Einheit</h3>
   <label>Titel</label><input id="vl-titel" placeholder="z.B. Grundlagen & Marktmodelle"/>
   <label>Schlagwörter <span class="hint">(kommagetrennt)</span></label><input id="vl-tags" placeholder="z.B. Angebot, Nachfrage, Gleichgewicht"/>
   <label>Inhalt / Einleitung <span class="hint">(wird automatisch formatiert)</span></label>
@@ -983,7 +983,7 @@ body {
     <div class="fh-row" style="margin-top:3px"><code>## Überschrift</code>&nbsp;<code>- Liste</code>&nbsp;<code>1. Num.</code>&nbsp;<code>&gt; Hinweis</code>&nbsp;<code>!&gt; Warnung</code>&nbsp;<code>:= Formel</code></div>
   </div>
   <div class="modal-footer">
-    <button class="btn-del" id="vl-del-btn" style="display:none" onclick="reqDelVL()">VL löschen</button>
+    <button class="btn-del" id="vl-del-btn" style="display:none" onclick="reqDelVL()">Einheit löschen</button>
     <button class="btn-cancel" onclick="closeM('m-vl')">Abbrechen</button>
     <button class="btn-save" onclick="saveVL()">Speichern</button>
   </div>
@@ -1158,12 +1158,21 @@ const getSEC=(mi,vi,si)=>(getVL(mi,vi)?.secs||[]).find(s=>s.id===si);
 ═══════════════════════════════════════ */
 function modProgress(id){
   let tot=0,done=0;
-  (S[id]||[]).forEach(v=>(v.secs||[]).forEach(s=>{tot++;if(s.done)done++;}));
+  (S[id]||[]).forEach(v=>{
+    if((v.secs||[]).length===0){
+      // VL with no sections counts as 1 item
+      tot++; if(v.done)done++;
+    } else {
+      v.secs.forEach(s=>{tot++;if(s.done)done++;});
+    }
+  });
   return{tot,done,pct:tot?Math.round(done/tot*100):0};
 }
 function vlProgress(v){
-  const s=v.secs||[];const d=s.filter(x=>x.done).length;
-  return{tot:s.length,done:d,pct:s.length?Math.round(d/s.length*100):0};
+  const s=v.secs||[];
+  if(!s.length) return{tot:1,done:v.done?1:0,pct:v.done?100:0};
+  const d=s.filter(x=>x.done).length;
+  return{tot:s.length,done:d,pct:Math.round(d/s.length*100)};
 }
 function progRing(pct,color){
   const r=7,cx=9,circ=2*Math.PI*r,dash=circ*pct/100;
@@ -1445,7 +1454,7 @@ function renderSearch(){
     const c=col(md.ci);
     h+=`<div class="vl-card">
       <div class="vl-top" style="cursor:default">
-        <span class="vl-nr" style="background:${c.bg};color:${c.tc}">VL ${v.nr}</span>
+        <span class="vl-nr" style="background:${c.bg};color:${c.tc}">${v.nr}</span>
         <div class="vl-meta">
           <div style="font-size:var(--fs-xs);color:var(--text3);margin-bottom:2px">${escHtml(md.label)}</div>
           <div class="vl-title">${escHtml(v.titel)}</div>
@@ -1538,7 +1547,7 @@ function renderModule(){
   let h=`<div class="page-hdr">
     <span class="page-dot" style="background:${c.c}"></span>
     <span class="page-title">${escHtml(md.label)}</span>
-    ${vls.length?`<span class="page-badge" style="background:${c.bg};color:${c.tc}">${vls.length} VL</span>`:''}
+    ${vls.length?`<span class="page-badge" style="background:${c.bg};color:${c.tc}">${vls.length} Einheit${vls.length===1?'':' en'}</span>`:''}
     <button class="page-edit-btn" onclick="openModModal('${cur}')">✎ Bearbeiten</button>
   </div>`;
 
@@ -1548,20 +1557,21 @@ function renderModule(){
   </div>`;
 
   if(!vls.length){
-    h+=`<div class="empty"><p>Noch keine Vorlesungen.</p><button class="btn-add" onclick="openVLModal(null,'${cur}')">＋ Erste Vorlesung hinzufügen</button></div>`;
+    h+=`<div class="empty"><p>Noch keine Vorlesungen.</p><button class="btn-add" onclick="openVLModal(null,'${cur}')">＋ Erste Einheit hinzufügen</button></div>`;
   } else {
     vls.forEach((v,vi)=>{
       const vo=openVL.has(v.id),vp=vlProgress(v);
       h+=`<div class="vl-card">`;
       if(vp.tot>0)h+=`<div class="vl-prog"><div class="vl-prog-fill" style="width:${vp.pct}%"></div></div>`;
       h+=`<div class="vl-top" onclick="togVL('${v.id}')">
-        <span class="vl-nr" style="background:${c.bg};color:${c.tc}">VL ${v.nr}</span>
+        <span class="vl-nr" style="background:${c.bg};color:${c.tc}">${v.nr}</span>
         <div class="vl-meta">
           <div class="vl-title">${escHtml(v.titel)}</div>
           <div class="tags">${(v.tags||[]).map(t=>`<span class="tag" style="background:${c.bg};color:${c.tc}">${escHtml(t)}</span>`).join('')}</div>
           ${!vo?makePreview(v):''}
         </div>
         <div class="vl-actions">
+          <button class="done-btn${v.done?' is-done':''}" style="flex-shrink:0" onclick="event.stopPropagation();toggleVLDone('${cur}','${v.id}')">${v.done?'↩ Zurücksetzen':'✓ Gelernt'}</button>
           <button class="icon-btn" onclick="event.stopPropagation();showVLMenu(event,'${cur}','${v.id}',${vi},${vls.length})">⋯</button>
         </div>
         <span class="chev${vo?' open':''}">▼</span>
@@ -1881,6 +1891,13 @@ function togSEC(id){openSEC.has(id)?openSEC.delete(id):openSEC.add(id);closeCtx(
 /* ═══════════════════════════════════════
    DONE TOGGLE
 ═══════════════════════════════════════ */
+
+function toggleVLDone(modId,vlId){
+  const v=getVL(modId,vlId);
+  v.done=!v.done;
+  save();renderPN();renderSB();
+  toast(v.done?'✓ Einheit als gelernt markiert':'Einheit zurückgesetzt');
+}
 function toggleDone(mi,vi,si){
   const s=getSEC(mi,vi,si);s.done=!s.done;
   save();renderPN();renderSB();
@@ -2020,8 +2037,8 @@ function doDelMod(){if(!_eMod)return;delete S[_eMod];S.__mods=S.__mods.filter(m=
 ═══════════════════════════════════════ */
 function openVLModal(vlId,modId){
   _vMod=modId||cur;_eVL=vlId;
-  if(vlId){const v=getVL(_vMod,vlId);document.getElementById('m-vl-h').textContent='Vorlesung bearbeiten';document.getElementById('vl-titel').value=v.titel;document.getElementById('vl-tags').value=(v.tags||[]).join(', ');document.getElementById('vl-intro').value=v.intro||'';document.getElementById('vl-del-btn').style.display='inline-flex';}
-  else{document.getElementById('m-vl-h').textContent='Neue Vorlesung';['vl-titel','vl-tags','vl-intro'].forEach(id=>document.getElementById(id).value='');document.getElementById('vl-del-btn').style.display='none';}
+  if(vlId){const v=getVL(_vMod,vlId);document.getElementById('m-vl-h').textContent='Einheit bearbeiten';document.getElementById('vl-titel').value=v.titel;document.getElementById('vl-tags').value=(v.tags||[]).join(', ');document.getElementById('vl-intro').value=v.intro||'';document.getElementById('vl-del-btn').style.display='inline-flex';}
+  else{document.getElementById('m-vl-h').textContent='Neue Einheit';['vl-titel','vl-tags','vl-intro'].forEach(id=>document.getElementById(id).value='');document.getElementById('vl-del-btn').style.display='none';}
   openM('m-vl');setTimeout(()=>document.getElementById('vl-titel').focus(),80);
 }
 function saveVL(){
@@ -2029,7 +2046,7 @@ function saveVL(){
   const tags=document.getElementById('vl-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
   const intro=autoFormat(document.getElementById('vl-intro').value.trim());
   const vls=S[_vMod];
-  if(_eVL){const v=vls.find(v=>v.id===_eVL);v.titel=titel;v.tags=tags;v.intro=intro;toast('Vorlesung aktualisiert');}
+  if(_eVL){const v=vls.find(v=>v.id===_eVL);v.titel=titel;v.tags=tags;v.intro=intro;toast('Einheit aktualisiert');}
   else{const v={id:uid(),nr:vls.length+1,titel,tags,intro,secs:[]};vls.push(v);openVL.add(v.id);}
   save();closeM('m-vl');render();
 }
@@ -2073,7 +2090,7 @@ function doDelSEC(){const vl=getVL(_sMod,_sVL);vl.secs=vl.secs.filter(s=>s.id!==
 ═══════════════════════════════════════ */
 function moveVL(mi,vi,dir){const vls=S[mi],i=vls.findIndex(v=>v.id===vi),j=i+dir;if(j<0||j>=vls.length)return;[vls[i],vls[j]]=[vls[j],vls[i]];vls.forEach((v,k)=>v.nr=k+1);save();renderPN();toast('Reihenfolge geändert');}
 function moveSEC(mi,vi,si,dir){const vl=getVL(mi,vi),i=vl.secs.findIndex(s=>s.id===si),j=i+dir;if(j<0||j>=vl.secs.length)return;[vl.secs[i],vl.secs[j]]=[vl.secs[j],vl.secs[i]];vl.secs.forEach((s,k)=>s.nr=k+1);save();renderPN();toast('Reihenfolge geändert');}
-function dupVL(mi,vi){const v=getVL(mi,vi),c=JSON.parse(JSON.stringify(v));c.id=uid();c.titel=v.titel+' (Kopie)';c.nr=S[mi].length+1;c.secs=(c.secs||[]).map(s=>({...s,id:uid(),done:false}));S[mi].push(c);save();openVL.add(c.id);render();toast('Vorlesung dupliziert');}
+function dupVL(mi,vi){const v=getVL(mi,vi),c=JSON.parse(JSON.stringify(v));c.id=uid();c.titel=v.titel+' (Kopie)';c.nr=S[mi].length+1;c.secs=(c.secs||[]).map(s=>({...s,id:uid(),done:false}));S[mi].push(c);save();openVL.add(c.id);render();toast('Einheit dupliziert');}
 function dupSEC(mi,vi,si){const vl=getVL(mi,vi),s=getSEC(mi,vi,si);const c={...s,id:uid(),titel:s.titel+' (Kopie)',nr:vl.secs.length+1,done:false};vl.secs.push(c);save();openSEC.add(c.id);renderPN();toast('Abschnitt dupliziert');}
 
 /* ═══════════════════════════════════════
@@ -2151,7 +2168,7 @@ function moveVLToMod(srcModId, vlId, dstModId){
   // If we just moved from current module, stay on current
   openVL.delete(vlId);
   render();
-  toast('Vorlesung verschoben → '+getMod(dstModId)?.label);
+  toast('Einheit verschoben → → '+getMod(dstModId)?.label);
 }
 function moveModToWs(modId, wsId){
   const md=getMod(modId);
@@ -2470,15 +2487,41 @@ function saveMod(){
 
 // Workspace modal
 let _eWs=null;
+const WS_EMOJIS=['🎓','📚','💼','🏠','🏋️','🎯','🔬','💡','🎨','🏆','📊','🗂️','⚡','🌱','💰','🎸','🏥','✈️','🌍','🔧','📝','🎮','🏛️','🤖'];
 function openWsModal(wsId){
   _eWs=wsId||null;
   const ws=wsId?getWs(wsId):null;
+  const curIcon=ws?ws.icon:'📁';
   document.getElementById('ws-name-inp').value=ws?ws.name:'';
-  document.getElementById('ws-icon-inp').value=ws?ws.icon:'📁';
+  document.getElementById('ws-icon-inp').value=curIcon;
+  document.getElementById('ws-icon-preview').textContent=curIcon;
   document.getElementById('m-ws-h').textContent=ws?'Bereich bearbeiten':'Neuer Bereich';
   document.getElementById('ws-del-btn').style.display=ws&&S.__workspaces.length>1?'inline-flex':'none';
+  // Build emoji grid
+  const grid=document.getElementById('ws-emoji-grid');
+  if(grid){
+    grid.innerHTML=WS_EMOJIS.map(e=>`
+      <button onclick="selectWsEmoji('${e}')" style="font-size:22px;border:2px solid ${e===curIcon?'var(--blue)':'transparent'};border-radius:8px;padding:4px;background:${e===curIcon?'var(--blue2)':'transparent'};cursor:pointer;transition:all .12s;line-height:1" id="wsemoji-${e}">${e}</button>
+    `).join('');
+  }
+  // Live preview on custom input
+  const inp=document.getElementById('ws-icon-inp');
+  inp.oninput=()=>{
+    const v=inp.value.trim();
+    if(v)document.getElementById('ws-icon-preview').textContent=v;
+  };
   openM('m-ws');
   setTimeout(()=>document.getElementById('ws-name-inp').focus(),80);
+}
+function selectWsEmoji(e){
+  document.getElementById('ws-icon-inp').value=e;
+  document.getElementById('ws-icon-preview').textContent=e;
+  // Highlight selected
+  document.querySelectorAll('[id^="wsemoji-"]').forEach(b=>{
+    const active=b.id==='wsemoji-'+e;
+    b.style.borderColor=active?'var(--blue)':'transparent';
+    b.style.background=active?'var(--blue2)':'transparent';
+  });
 }
 function saveWs(){
   const name=document.getElementById('ws-name-inp').value.trim();if(!name)return;
@@ -2569,10 +2612,18 @@ function delWs(){
 <!-- Workspace modal -->
 <div class="backdrop" id="m-ws"><div class="modal">
   <h3 id="m-ws-h">Neuer Bereich</h3>
-  <label>Name <span class="hint">(z.B. Universität, Arbeit, Privat)</span></label>
-  <input id="ws-name-inp" placeholder="z.B. Universität"/>
-  <label>Icon <span class="hint">(Emoji)</span></label>
-  <input id="ws-icon-inp" placeholder="🎓" style="font-size:18px;max-width:80px"/>
+  <label>Name</label>
+  <input id="ws-name-inp" placeholder="z.B. Universität, Arbeit, Privat"/>
+  <label>Icon wählen</label>
+  <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:6px" id="ws-emoji-grid"></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+    <label style="margin:0;font-size:var(--fs-xs);color:var(--text3)">Eigenes Emoji:</label>
+    <input id="ws-icon-inp" placeholder="✏️" style="max-width:80px;font-size:18px;text-align:center"/>
+  </div>
+  <div style="margin-top:8px;padding:8px 12px;background:var(--s2);border-radius:var(--r);display:flex;align-items:center;gap:10px">
+    <span id="ws-icon-preview" style="font-size:28px">📁</span>
+    <span style="font-size:var(--fs-sm);color:var(--text3)">Vorschau</span>
+  </div>
   <div class="modal-footer">
     <button class="btn-del" id="ws-del-btn" style="display:none" onclick="delWs()">Bereich löschen</button>
     <button class="btn-cancel" onclick="closeM('m-ws')">Abbrechen</button>
