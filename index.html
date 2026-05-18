@@ -733,6 +733,22 @@ body {
   border: 5px solid transparent;
   border-bottom: none; border-top-color: var(--text);
 }
+/* Inline format bar: appears below textarea when focused */
+.fmt-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 3px;
+  padding: 6px 8px; background: var(--s2);
+  border: 1px solid var(--border2); border-top: none;
+  border-radius: 0 0 var(--r) var(--r);
+}
+.fmt-bar-btn {
+  padding: 4px 9px; border: 1px solid var(--border2);
+  border-radius: 6px; background: var(--surface);
+  cursor: pointer; font-size: 12px; color: var(--text2);
+  transition: all .1s; line-height: 1; font-family: inherit;
+}
+.fmt-bar-btn:hover { background: var(--blue2); border-color: var(--blue); color: var(--blue); }
+.fmt-bar-sep { width: 1px; height: 16px; background: var(--border2); margin: 0 2px; }
+.fmt-bar-hint { font-size: 10px; color: var(--text4); margin-left: 4px; }
 .fmt-tb-btn {
   padding: 4px 8px; border: none; border-radius: 6px;
   background: transparent; color: var(--bg);
@@ -976,8 +992,8 @@ body {
     📷 Bild einfügen
     <input type="file" accept="image/*" style="display:none" onchange="insertImgInline(event,'vl-intro')">
   </label>
-  <div class="auto-note">Text wird beim Speichern automatisch strukturiert – einfach einfügen.</div>
-  <div class="fmt-help">
+  <div class="auto-note">Text wird beim Speichern automatisch strukturiert.</div>
+  <div class="fmt-help" style="display:none">
     <div class="fh-row"><code>**fett**</code><code>*kursiv*</code><code>__unterstr__</code><code>~~durch~~</code></div>
     <div class="fh-row" style="margin-top:3px"><code>==gelb==</code>&nbsp;<code>$$grün$$</code>&nbsp;<code>^^blau^^</code>&nbsp;<code>!!rot!!</code>&nbsp;<code>[[rahmen]]</code></div>
     <div class="fh-row" style="margin-top:3px"><code>## Überschrift</code>&nbsp;<code>- Liste</code>&nbsp;<code>1. Num.</code>&nbsp;<code>&gt; Hinweis</code>&nbsp;<code>!&gt; Warnung</code>&nbsp;<code>:= Formel</code></div>
@@ -1003,13 +1019,28 @@ body {
   <label>Lernziel <span class="hint">("Ich kann…")</span></label>
   <input id="sec-lz" placeholder="…Indifferenzkurven zeichnen und interpretieren."/>
   <label>Inhalt <span class="hint">(wird automatisch formatiert)</span></label>
-  <textarea id="sec-text" placeholder="Text hier einfügen oder tippen.&#10;&#10;Unterstützte Formatierung:&#10;# Überschrift 1  /  ## Überschrift 2&#10;- Bullet Point  /    sub-punkt (einrücken)&#10;1. nummerierte Liste&#10;**fett**  /  *kursiv*  /  `code`&#10;&gt; Wichtiger Hinweis  /  !&gt; Warnung&#10;--- Trennlinie"></textarea>
+  <textarea id="sec-text" class="fmt-target" placeholder="Text einfügen – wird automatisch strukturiert."></textarea>
+  <div class="fmt-bar">
+    <button class="fmt-bar-btn" onclick="fmtTA(this,'**','**')"><strong>B</strong></button>
+    <button class="fmt-bar-btn" onclick="fmtTA(this,'*','*')"><em>I</em></button>
+    <button class="fmt-bar-btn" onclick="fmtTA(this,'__','__')" style="text-decoration:underline">U</button>
+    <button class="fmt-bar-btn" onclick="fmtTA(this,'~~','~~')"><s>S</s></button>
+    <div class="fmt-bar-sep"></div>
+    <button class="fmt-bar-btn" style="background:#ffe066;color:#2a2400" onclick="fmtTA(this,'==','==')">A</button>
+    <button class="fmt-bar-btn" style="background:#c6f0a2;color:#1a4208" onclick="fmtTA(this,'$$','$$')">A</button>
+    <button class="fmt-bar-btn" style="background:#bde0fc;color:#0d3d6e" onclick="fmtTA(this,'^^','^^')">A</button>
+    <button class="fmt-bar-btn" style="background:#ffc9c9;color:#6b0000" onclick="fmtTA(this,'!!','!!')">A</button>
+    <div class="fmt-bar-sep"></div>
+    <button class="fmt-bar-btn" onclick="fmtTA(this,'[[',']]')">[ ]</button>
+    <button class="fmt-bar-btn" onclick="fmtTA(this,':= ','')">:=</button>
+    <button class="fmt-bar-btn" style="color:var(--text3)" onclick="fmtRemove(this)">✕</button>
+  </div>
   <label style="cursor:pointer" class="img-upload-btn">
     📷 Bild einfügen
     <input type="file" accept="image/*" style="display:none" onchange="insertImgInline(event,'sec-text')">
   </label>
-  <div class="auto-note">Text wird beim Speichern automatisch strukturiert – einfach einfügen.</div>
-  <div class="fmt-help">
+  <div class="auto-note">Text wird beim Speichern automatisch strukturiert.</div>
+  <div class="fmt-help" style="display:none">
     <div class="fh-row">
       <code>**fett**</code><code>*kursiv*</code><code>__unterstr__</code><code>~~durchgestr~~</code><code>`code`</code>
     </div>
@@ -1159,20 +1190,19 @@ const getSEC=(mi,vi,si)=>(getVL(mi,vi)?.secs||[]).find(s=>s.id===si);
 function modProgress(id){
   let tot=0,done=0;
   (S[id]||[]).forEach(v=>{
-    if((v.secs||[]).length===0){
-      // VL with no sections counts as 1 item
-      tot++; if(v.done)done++;
-    } else {
-      v.secs.forEach(s=>{tot++;if(s.done)done++;});
-    }
+    // The unit itself always counts as 1 item
+    tot++; if(v.done)done++;
+    // Each section counts additionally
+    (v.secs||[]).forEach(s=>{tot++;if(s.done)done++;});
   });
   return{tot,done,pct:tot?Math.round(done/tot*100):0};
 }
 function vlProgress(v){
-  const s=v.secs||[];
-  if(!s.length) return{tot:1,done:v.done?1:0,pct:v.done?100:0};
-  const d=s.filter(x=>x.done).length;
-  return{tot:s.length,done:d,pct:Math.round(d/s.length*100)};
+  const secs=v.secs||[];
+  // Unit itself (1) + sections
+  const tot=1+secs.length;
+  const done=(v.done?1:0)+secs.filter(s=>s.done).length;
+  return{tot,done,pct:Math.round(done/tot*100)};
 }
 function progRing(pct,color){
   const r=7,cx=9,circ=2*Math.PI*r,dash=circ*pct/100;
@@ -1937,15 +1967,7 @@ document.addEventListener('keydown',e=>{
     if(searchQ){clearSearch();return;}
     if(editSEC.size>0){editSEC.clear();renderPN();return;}
   }
-  // Format shortcuts when a textarea is focused
-  if((e.ctrlKey||e.metaKey)&&!anyOpen){
-    const ta=document.activeElement;
-    if(ta&&ta.tagName==='TEXTAREA'){
-      if(e.key==='b'){e.preventDefault();window.applyFmt('**','**');return;}
-      if(e.key==='i'){e.preventDefault();window.applyFmt('*','*');return;}
-      if(e.key==='u'){e.preventDefault();window.applyFmt('__','__');return;}
-    }
-  }
+  // Formatting via toolbar only (no keyboard shortcuts)
   if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&anyOpen){
     const id=document.querySelector('.backdrop.open')?.id;
     if(id==='m-vl')saveVL();else if(id==='m-sec')saveSEC();else if(id==='m-mod')saveMod();else if(id==='m-sp')saveSpEvent();
@@ -2176,6 +2198,72 @@ function moveModToWs(modId, wsId){
   save();renderSB();toast('Modul verschoben');
 }
 
+
+/* ═══════════════════════════════════════
+   INLINE FORMAT BAR FUNCTIONS
+   fmtTA(btn, before, after) – finds the
+   nearest .fmt-target textarea and wraps
+   selected text (or inserts at cursor)
+═══════════════════════════════════════ */
+function fmtTA(btn, before, after){
+  // Find closest textarea: previous sibling or parent's textarea
+  const bar = btn.closest('.fmt-bar');
+  let ta = null;
+  if(bar){
+    // Walk up to find the textarea before this bar
+    let el = bar.previousElementSibling;
+    while(el){ if(el.tagName==='TEXTAREA'){ta=el;break;} el=el.previousElementSibling; }
+    if(!ta) ta = bar.closest('.sec-edit, .modal')?.querySelector('.fmt-target');
+  }
+  if(!ta) ta = document.activeElement?.tagName==='TEXTAREA' ? document.activeElement : null;
+  if(!ta) return;
+
+  const s = ta.selectionStart, e2 = ta.selectionEnd;
+  const val = ta.value;
+  const sel = val.slice(s, e2);
+
+  if(s === e2){
+    // No selection: insert placeholder
+    const placeholder = before + 'Text' + after;
+    ta.value = val.slice(0,s) + placeholder + val.slice(s);
+    ta.selectionStart = s + before.length;
+    ta.selectionEnd   = s + before.length + 4;
+  } else {
+    // Toggle: remove if already wrapped
+    const bLen=before.length, aLen=after.length;
+    if(val.slice(s-bLen,s)===before && val.slice(e2,e2+aLen)===after){
+      ta.value = val.slice(0,s-bLen)+sel+val.slice(e2+aLen);
+      ta.selectionStart = s-bLen; ta.selectionEnd = e2-bLen;
+    } else {
+      ta.value = val.slice(0,s)+before+sel+after+val.slice(e2);
+      ta.selectionStart = s+bLen; ta.selectionEnd = e2+bLen;
+    }
+  }
+  ta.focus();
+}
+
+function fmtRemove(btn){
+  const bar = btn.closest('.fmt-bar');
+  let ta = null;
+  if(bar){
+    let el = bar.previousElementSibling;
+    while(el){ if(el.tagName==='TEXTAREA'){ta=el;break;} el=el.previousElementSibling; }
+    if(!ta) ta = bar.closest('.sec-edit,.modal')?.querySelector('.fmt-target');
+  }
+  if(!ta) return;
+  const s=ta.selectionStart, e2=ta.selectionEnd;
+  if(s===e2) return;
+  const val=ta.value;
+  let sel=val.slice(s,e2)
+    .replace(/\*\*(.+?)\*\*/g,'$1').replace(/\*(.+?)\*/g,'$1')
+    .replace(/__(.+?)__/g,'$1').replace(/~~(.+?)~~/g,'$1')
+    .replace(/==(.+?)==/g,'$1').replace(/\$\$(.+?)\$\$/g,'$1')
+    .replace(/\^\^(.+?)\^\^/g,'$1').replace(/!!(.+?)!!/g,'$1')
+    .replace(/\[\[(.+?)\]\]/g,'$1').replace(/`(.+?)`/g,'$1');
+  ta.value = val.slice(0,s)+sel+val.slice(e2);
+  ta.selectionStart=s; ta.selectionEnd=s+sel.length;
+  ta.focus();
+}
 /* ═══════════════════════════════════════
    INIT
 ═══════════════════════════════════════ */
