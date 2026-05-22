@@ -299,15 +299,23 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);font-si
 
 /* == STUNDENPLAN == */
 .sp-wrap{border:1px solid var(--bd2);border-radius:var(--rl);overflow:hidden;background:var(--sur);box-shadow:var(--sh)}
+.sp-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-6px 0 12px;flex-wrap:wrap}
+.sp-summary{font-size:var(--fsm);color:var(--tx2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sp-pill{font-size:var(--fsx);font-family:'DM Mono',monospace;color:var(--tx2);background:var(--s2);border:1px solid var(--bd2);border-radius:var(--rx);padding:3px 9px}
 .sp-head{display:grid;grid-template-columns:90px repeat(5,1fr);background:var(--s2);border-bottom:1px solid var(--bd2)}
 .sp-hc{padding:9px 6px;text-align:center;font-size:var(--fsm);font-weight:700;color:var(--tx2);border-right:1px solid var(--bd)}
+.sp-hc.today{color:var(--blue);background:var(--blue2)}
 .sp-hc:last-child{border-right:none}
 .sp-row{display:grid;grid-template-columns:90px repeat(5,1fr);border-top:1px solid var(--bd)}
 .sp-time{padding:6px 8px;font-size:10px;color:var(--tx3);font-family:'DM Mono',monospace;text-align:right;border-right:1px solid var(--bd);background:var(--s2);display:flex;align-items:center;justify-content:flex-end;white-space:pre-line;line-height:1.4}
+.sp-time.has-event{color:var(--tx2);font-weight:600}
 .sp-cell{padding:3px;border-right:1px solid var(--bd);min-height:68px;cursor:pointer;transition:background .1s;position:relative}
 .sp-cell:last-child{border-right:none}
 .sp-cell:hover{background:var(--s2)}
-.sp-ev{border-radius:6px;padding:5px 7px;font-size:11px;font-weight:600;line-height:1.3;height:100%;display:flex;flex-direction:column;gap:2px}
+.sp-cell.today{background:rgba(26,106,191,.035)}
+.sp-cell.has-event{background:var(--sur)}
+.sp-stack{display:flex;flex-direction:column;gap:4px;height:100%}
+.sp-ev{border-radius:6px;padding:5px 7px;font-size:11px;font-weight:600;line-height:1.3;min-height:36px;display:flex;flex-direction:column;gap:2px;border:1px solid rgba(0,0,0,.04)}
 .sp-ev-sub{font-size:10px;opacity:.7;font-weight:400}
 .sp-plus{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--bd3);opacity:0;transition:opacity .1s}
 .sp-cell:hover .sp-plus{opacity:1}
@@ -379,6 +387,41 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);font-si
 .search-empty .sei{font-size:36px;margin-bottom:12px}
 .search-empty p{font-size:var(--fs);color:var(--tx3)}
 
+/* == LEARNING TOOLS == */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:16px}
+.dash-card{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--rl);padding:16px;box-shadow:var(--sh)}
+.dash-k{font-size:30px;font-weight:700;color:var(--tx);line-height:1}
+.dash-l{font-size:var(--fsm);color:var(--tx3);margin-top:4px}
+.dash-list{display:flex;flex-direction:column;gap:8px}
+.dash-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd)}
+.dash-item:last-child{border-bottom:none}
+.dash-main{flex:1;min-width:0}
+.dash-title{font-size:var(--fs);font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dash-sub{font-size:var(--fsx);color:var(--tx3);margin-top:2px}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.chip-btn{border:1px solid var(--bd2);background:transparent;color:var(--tx2);border-radius:var(--rx);padding:5px 11px;font-size:var(--fsx);font-family:inherit;cursor:pointer}
+.chip-btn.active,.chip-btn:hover{background:var(--s2);border-color:var(--bd3);color:var(--tx)}
+.rev-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.rev-btn{border:1px solid var(--bd2);border-radius:var(--rx);background:var(--sur);color:var(--tx2);font-size:var(--fsx);font-family:inherit;padding:4px 9px;cursor:pointer}
+.rev-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue2)}
+.rev-due{font-size:10px;color:var(--tx3);font-family:'DM Mono',monospace;margin-left:auto;white-space:nowrap}
+.card-wrap{max-width:760px;margin:0 auto}
+.learn-card{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--rl);box-shadow:var(--sh2);padding:22px;min-height:260px;display:flex;flex-direction:column;gap:14px}
+.learn-front{font-size:22px;font-weight:700;color:var(--tx);line-height:1.25}
+.learn-meta{font-size:var(--fsm);color:var(--tx3)}
+.learn-answer{border-top:1px solid var(--bd);padding-top:14px}
+.exam-input{padding:6px 9px;border:1px solid var(--bd2);border-radius:var(--r);font-family:inherit;background:var(--sur);color:var(--tx);font-size:var(--fsm)}
+.sp-note{font-size:10px;color:var(--tx3);margin-top:3px;line-height:1.4}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.mini-card{background:var(--sur);border:1px solid var(--bd2);border-radius:var(--rl);padding:14px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:8px}
+.mini-card-front{font-size:var(--fs);font-weight:700;color:var(--tx);line-height:1.35}
+.mini-card-back{font-size:var(--fsm);color:var(--tx2);line-height:1.55;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.selection-tip{font-size:var(--fsx);color:var(--tx3);background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r);padding:7px 10px;margin-top:8px}
+.sel-menu{position:fixed;z-index:700;display:none;align-items:center;gap:4px;background:var(--tx);color:var(--bg);border-radius:var(--rx);box-shadow:var(--sh2);padding:4px}
+.sel-menu.show{display:flex}
+.sel-menu button{border:none;border-radius:var(--rx);background:transparent;color:inherit;font-size:var(--fsx);font-family:inherit;font-weight:700;padding:6px 10px;cursor:pointer;white-space:nowrap}
+.sel-menu button:hover{background:rgba(255,255,255,.14)}
+
 @media(max-width:700px){
   .content{grid-template-columns:1fr}
   .sidebar{flex-direction:row;flex-wrap:nowrap;overflow-x:auto;height:auto;border-right:none;border-bottom:1px solid var(--bd2);padding:8px;gap:3px}
@@ -428,6 +471,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);font-si
     <div id="sb-mods"></div>
     <button class="sb-add" style="margin-top:4px;border-top:1px solid var(--bd);padding-top:8px" onclick="openWsModal(null)">＋ Bereich hinzufügen</button>
     <div class="sb-div"></div>
+    <div class="sb-label">Lernen</div>
+    <button class="sb-nav" id="nav-dashboard" onclick="goView('dashboard')"><span class="nav-icon">⌂</span><span>Dashboard</span></button>
+    <button class="sb-nav" id="nav-review" onclick="goView('review')"><span class="nav-icon">▣</span><span>Abfragen</span></button>
+    <button class="sb-nav" id="nav-cards" onclick="goView('cards')"><span class="nav-icon">□</span><span>Karten</span></button>
+    <button class="sb-nav" id="nav-exams" onclick="goView('exams')"><span class="nav-icon">◎</span><span>Prüfungen</span></button>
+    <div class="sb-div"></div>
     <div class="sb-label">Bereiche</div>
     <button class="sb-nav" id="nav-stundenplan" onclick="goView('stundenplan')"><span class="nav-icon">📅</span><span>Stundenplan</span></button>
     <button class="sb-nav" id="nav-notizen" onclick="goView('notizen')"><span class="nav-icon">📝</span><span>Notizen</span></button>
@@ -440,6 +489,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);font-si
 
 <div class="ctx" id="ctx"></div>
 <div class="toast" id="toast"></div>
+<div class="sel-menu" id="sel-menu">
+  <button onclick="createCardFromStoredSelection('qa')">Karte</button>
+  <button onclick="createCardFromStoredSelection('cloze')">Lücke</button>
+</div>
 <div class="shortcuts">
   <span><span class="kbd">/</span> Suche</span>
   <span><span class="kbd">Esc</span> Schließen</span>
@@ -586,10 +639,28 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);font-si
   <label>Modul</label><select id="sp-mod"></select>
   <label>Typ <span class="hint">(z.B. Vorlesung, Übung)</span></label><input id="sp-title" placeholder="z.B. Vorlesung"/>
   <label>Raum <span class="hint">(optional)</span></label><input id="sp-room" placeholder="z.B. HS 1"/>
+  <label>Notiz zum Termin <span class="hint">(optional)</span></label>
+  <textarea id="sp-note" style="min-height:70px" placeholder="Nach der Vorlesung: Was war wichtig? Was muss nachgearbeitet werden?"></textarea>
   <div class="modal-footer">
     <button class="btn-del" id="sp-del-btn" style="display:none" onclick="delSp()">Löschen</button>
     <button class="btn-cancel" onclick="closeM('m-sp')">Abbrechen</button>
     <button class="btn-save" onclick="saveSp()">Speichern</button>
+  </div>
+</div></div>
+
+<!-- Card modal -->
+<div class="backdrop" id="m-card"><div class="modal">
+  <h3 id="m-card-h">Karteikarte</h3>
+  <label>Frage / Vorderseite <span class="hint">(wird bei Markierung vorgeschlagen)</span></label>
+  <textarea id="card-front" style="min-height:70px" placeholder="z.B. Was bedeutet Opportunitätskosten?"></textarea>
+  <label>Antwort / Rückseite <span class="hint">(markierter Text landet hier)</span></label>
+  <textarea id="card-back" style="min-height:110px" placeholder="Kurze, prüfbare Antwort eintragen."></textarea>
+  <label>Modul</label><select id="card-mod"></select>
+  <div class="selection-tip">Tipp: In einer Einheit Text markieren. Direkt an der Markierung erscheint „Karte“ oder „Lücke“.</div>
+  <div class="modal-footer">
+    <button class="btn-del" id="card-del-btn" style="display:none" onclick="delCard()">Löschen</button>
+    <button class="btn-cancel" onclick="closeM('m-card')">Abbrechen</button>
+    <button class="btn-save" onclick="saveCard()">Speichern</button>
   </div>
 </div></div>
 
@@ -1239,12 +1310,12 @@ TEXT:
 /* =============================================
    STATE
    ============================================= */
-const STORAGE_KEY='sp_full_20260522T135703_ca91c86753';
+const STORAGE_KEY='sp_full_v3_cards_20260522T135703_ca91c86753';
 const CUR_KEY=STORAGE_KEY+'_cur';
 const THEME_KEY=STORAGE_KEY+'_theme';
 const FS_KEY=STORAGE_KEY+'_fs';
 const SEED_KEY=STORAGE_KEY+'_seed';
-const EMBEDDED_SEED='2026-05-22T13:57:03.551Z:ca91c86753';
+const EMBEDDED_SEED='2026-05-22T13:57:03.551Z:ca91c86753:cards-v3';
 
 function dataScore(data){
   if(!data||!Array.isArray(data.__mods))return 0;
@@ -1289,6 +1360,10 @@ function migrateData(input){
   if(!data.__sp)data.__sp={};
   if(!data.__notes)data.__notes={};
   if(!data.__wscol)data.__wscol={};
+  if(!data.__rev)data.__rev={};
+  if(!data.__exams)data.__exams={};
+  if(!data.__spNotes)data.__spNotes={};
+  if(!Array.isArray(data.__cards))data.__cards=[];
   if(data.__wsCollapsed&&!Object.keys(data.__wscol).length)data.__wscol=data.__wsCollapsed;
   return data;
 }
@@ -1353,7 +1428,9 @@ let _eWs=null,_eMod=null,_mci=0,_pendWs=null;
 let _eUnit=null,_uMod=null;
 let _eSec=null,_secMod=null,_secUnit=null;
 let _spDay=null,_spTime=null,_spId=null;
+let _eCard=null,_cardCtx=null;
 let _kiTab='syntax';
+let searchFilter='all',cardIdx=0,cardShow=false,_selCard=null;
 
 const uid=()=>Math.random().toString(36).slice(2,9);
 const col=i=>COLORS[i%COLORS.length];
@@ -1361,6 +1438,10 @@ const getMod=id=>S.__mods.find(m=>m.id===id);
 const getUnit=(mi,ui)=>(S[mi]||[]).find(u=>u.id===ui);
 const getSec=(mi,ui,si)=>(getUnit(mi,ui)?.secs||[]).find(s=>s.id===si);
 const getWs=id=>S.__ws.find(w=>w.id===id);
+if(!S.__rev)S.__rev={};
+if(!S.__exams)S.__exams={};
+if(!S.__spNotes)S.__spNotes={};
+if(!Array.isArray(S.__cards))S.__cards=[];
 
 /* =============================================
    THEME
@@ -1401,6 +1482,60 @@ function progRing(pct,color){
 function prioBadge(p){
   const m={k:['Kritisch','pk'],h:['Hoch','ph'],m:['Mittel','pm']};
   const[l,c]=m[p]||[];return l?`<span class="prio ${c}">${l}</span>`:'';
+}
+function todayISO(){return new Date().toISOString().slice(0,10);}
+function addDays(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function daysUntil(iso){if(!iso)return null;const a=new Date(todayISO()),b=new Date(iso);return Math.ceil((b-a)/86400000);}
+function cleanText(s=''){return String(s).replace(/img:[^\n]+/g,'').replace(/[#*_`~=!>\[\]$]/g,'').replace(/\s+/g,' ').trim();}
+function unitKey(mi,ui){return 'u:'+mi+':'+ui;}
+function secKey(mi,ui,si){return 's:'+mi+':'+ui+':'+si;}
+function cardKey(id){return 'c:'+id;}
+function getReview(key){return S.__rev[key]||{};}
+function dueLabel(key){
+  const r=getReview(key);
+  if(!r.due)return 'Neu';
+  const d=daysUntil(r.due);
+  if(d<0)return `${Math.abs(d)} Tg. überfällig`;
+  if(d===0)return 'Heute';
+  if(d===1)return 'Morgen';
+  return `In ${d} Tg.`;
+}
+function setReview(key,level){
+  const gap={again:1,hard:3,good:7,easy:14}[level]||3;
+  const cur=S.__rev[key]||{};
+  S.__rev[key]={...cur,last:todayISO(),due:addDays(gap),level,streak:level==='again'?0:(cur.streak||0)+1};
+  save();renderPN();renderSB();
+  toast(level==='again'?'Morgen wiederholen':'Wiederholung geplant');
+}
+function allCards(){
+  const cards=[];
+  S.__mods.forEach(md=>{
+    (S[md.id]||[]).forEach(u=>{
+      if(u.intro)cards.push({key:unitKey(md.id,u.id),type:'unit',md,u,title:u.titel,answer:u.intro,done:!!u.done,prio:''});
+      (u.secs||[]).forEach(s=>cards.push({key:secKey(md.id,u.id,s.id),type:'sec',md,u,s,title:s.titel,answer:s.text||s.lz||'',done:!!s.done,prio:s.prio||''}));
+    });
+  });
+  (S.__cards||[]).forEach(c=>{
+    const md=getMod(c.modId)||S.__mods[0]||{id:'',label:'Allgemein',ci:0};
+    const u=c.unitId?getUnit(c.modId,c.unitId):null;
+    cards.push({key:cardKey(c.id),type:'custom',md,u,title:c.front,answer:c.back,done:false,prio:c.prio||'',card:c});
+  });
+  return cards;
+}
+function dueCards(){
+  const t=todayISO();
+  return allCards().filter(c=>!getReview(c.key).due||getReview(c.key).due<=t);
+}
+function nextEvent(){
+  const today=spToday();
+  if(!today)return null;
+  const now=new Date(),curMin=now.getHours()*60+now.getMinutes();
+  const list=[];
+  spEventIndex().forEach((events,key)=>{
+    const day=key.slice(0,key.indexOf('_')),time=key.slice(key.indexOf('_')+1);
+    if(day===today&&spStartMin(time)>=curMin)events.forEach(ev=>list.push(ev));
+  });
+  return list.sort((a,b)=>spStartMin(a.__time)-spStartMin(b.__time))[0]||null;
 }
 
 /* =============================================
@@ -1523,6 +1658,146 @@ function makePreview(u){
 }
 
 /* =============================================
+   DASHBOARD / REVIEW / EXAMS
+   ============================================= */
+function renderDashboard(){
+  const cards=allCards(),due=dueCards(),ev=nextEvent();
+  const critical=cards.filter(c=>c.prio==='k'&&!c.done).slice(0,6);
+  const nextExam=S.__mods.map(m=>({m,date:S.__exams[m.id],days:daysUntil(S.__exams[m.id])})).filter(x=>x.date&&x.days>=0).sort((a,b)=>a.days-b.days)[0];
+  const done=cards.filter(c=>c.done).length,pct=cards.length?Math.round(done/cards.length*100):0;
+  let h=`<div class="page-hdr"><span class="page-title">Dashboard</span></div>
+  <div class="dash-grid">
+    <div class="dash-card"><div class="dash-k">${due.length}</div><div class="dash-l">Heute fällige Wiederholungen</div></div>
+    <div class="dash-card"><div class="dash-k">${pct}%</div><div class="dash-l">Lernfortschritt</div></div>
+    <div class="dash-card"><div class="dash-k">${Object.keys(S.__sp||{}).length}</div><div class="dash-l">Stundenplan-Termine</div></div>
+    <div class="dash-card"><div class="dash-k">${nextExam?nextExam.days:'-'}</div><div class="dash-l">${nextExam?'Tage bis '+escH(nextExam.m.label):'Kein Klausurdatum'}</div></div>
+  </div>
+  <div class="set-card"><h4>Nächste Schritte</h4><div class="dash-list">`;
+  if(ev){const m=getMod(ev.modId);h+=`<div class="dash-item"><div class="dash-main"><div class="dash-title">${escH(ev.__day)} ${escH(ev.__time)} · ${escH(ev.title)}</div><div class="dash-sub">${m?escH(m.label):''}${ev.room?' · '+escH(ev.room):''}</div></div><button class="tbtn" onclick="goView('stundenplan')">Plan</button></div>`;}
+  due.slice(0,5).forEach(c=>h+=`<div class="dash-item"><div class="dash-main"><div class="dash-title">${escH(c.title)}</div><div class="dash-sub">${escH(c.md.label)}${c.u?' · '+escH(c.u.titel):' · Eigene Karte'} · ${dueLabel(c.key)}</div></div><button class="tbtn" onclick="goView('review')">Abfragen</button></div>`);
+  if(!ev&&!due.length)h+=`<div class="dash-item"><div class="dash-main"><div class="dash-title">Alles ruhig</div><div class="dash-sub">Keine fälligen Wiederholungen und kein Termin mehr heute.</div></div></div>`;
+  h+=`</div></div><div class="set-card"><h4>Kritische offene Abschnitte</h4><div class="dash-list">`;
+  critical.forEach(c=>h+=`<div class="dash-item"><div class="dash-main"><div class="dash-title">${escH(c.title)}</div><div class="dash-sub">${escH(c.md.label)} · ${escH(c.u.titel)}</div></div><button class="tbtn" onclick="goMod('${c.md.id}');openUnits.add('${c.u.id}');openSecs.add('${c.s.id}');renderPN()">Öffnen</button></div>`);
+  if(!critical.length)h+=`<div class="dash-item"><div class="dash-main"><div class="dash-title">Keine kritischen offenen Abschnitte</div><div class="dash-sub">Sehr angenehm. Das ist genau der Zustand, den man vor Prüfungen mag.</div></div></div>`;
+  h+=`</div></div>`;
+  document.getElementById('pn').innerHTML=h;
+}
+function renderReview(){
+  const cards=dueCards();
+  if(cardIdx>=cards.length)cardIdx=0;
+  let h=`<div class="page-hdr"><span class="page-title">Abfragen</span><span class="page-badge">${cards.length} fällig</span></div>`;
+  if(!cards.length){h+=`<div class="empty"><p>Keine fälligen Karten. Du kannst über Nochmal/Schwer/Sicher neue Wiederholungen planen.</p><button class="btn-add" onclick="cardIdx=0;cardShow=false;renderReview()">Neu laden</button></div>`;document.getElementById('pn').innerHTML=h;return;}
+  const c=cards[cardIdx],r=getReview(c.key);
+  h+=`<div class="card-wrap"><div class="learn-card">
+    <div class="learn-meta">${escH(c.md.label)}${c.u?' · '+escH(c.u.titel):' · Eigene Karte'} · ${dueLabel(c.key)}</div>
+    <div class="learn-front">${escH(c.title)}</div>
+    ${cardShow?`<div class="learn-answer"><div class="rich">${renderRich(c.answer||'Kein Inhalt hinterlegt.')}</div></div>`:`<button class="btn-add" onclick="cardShow=true;renderReview()">Antwort anzeigen</button>`}
+    <div class="rev-row">
+      <button class="rev-btn" onclick="setReview('${c.key}','again');cardShow=false;cardIdx=0;renderReview()">Nochmal</button>
+      <button class="rev-btn" onclick="setReview('${c.key}','hard');cardShow=false;cardIdx=0;renderReview()">Schwer</button>
+      <button class="rev-btn" onclick="setReview('${c.key}','good');cardShow=false;cardIdx=0;renderReview()">Sicher</button>
+      <button class="rev-btn" onclick="setReview('${c.key}','easy');cardShow=false;cardIdx=0;renderReview()">Sehr sicher</button>
+      <button class="rev-btn" onclick="cardIdx=(cardIdx+1)%${cards.length};cardShow=false;renderReview()">Weiter</button>
+    </div>
+    <div class="learn-meta">Karte ${cardIdx+1} von ${cards.length}${r.streak?` · Serie ${r.streak}`:''}</div>
+  </div></div>`;
+  document.getElementById('pn').innerHTML=h;
+}
+function renderExams(){
+  let h=`<div class="page-hdr"><span class="page-title">Prüfungen</span></div><div class="set-card"><h4>Klausurtermine</h4>`;
+  S.__mods.forEach(m=>{
+    const d=S.__exams[m.id]||'',left=daysUntil(d);
+    h+=`<div class="set-row"><div class="set-info"><div class="set-label">${escH(m.label)}</div><div class="set-sub">${d?(left<0?'Vorbei':left===0?'Heute':left+' Tage übrig'):'Kein Termin gesetzt'}</div></div><input class="exam-input" type="date" value="${escA(d)}" onchange="S.__exams['${m.id}']=this.value;save();renderPN()"></div>`;
+  });
+  h+=`</div>`;
+  document.getElementById('pn').innerHTML=h;
+}
+function renderCards(){
+  const cards=S.__cards||[];
+  let h=`<div class="page-hdr"><span class="page-title">Karten</span><span class="page-badge">${cards.length} eigene Karten</span><button class="page-edit-btn" onclick="openCardModal(null)">＋ Karte</button></div>
+  <div class="selection-tip">Begriffe direkt aus Lerntexten erstellen: Text markieren, dann im kleinen Menü „Karte“ oder „Lücke“ wählen.</div>`;
+  if(!cards.length){h+=`<div class="empty"><p>Noch keine eigenen Karten. Markiere einen Begriff in einem Abschnitt oder erstelle manuell eine Karte.</p><button class="btn-add" onclick="openCardModal(null)">＋ Erste Karte erstellen</button></div>`;document.getElementById('pn').innerHTML=h;return;}
+  h+=`<div class="card-grid">`;
+  cards.forEach(c=>{
+    const md=getMod(c.modId),due=dueLabel(cardKey(c.id));
+    h+=`<div class="mini-card"><div class="learn-meta">${md?escH(md.label):'Allgemein'} · ${due}</div><div class="mini-card-front">${escH(c.front)}</div><div class="mini-card-back">${escH(cleanText(c.back))}</div><div class="rev-row"><button class="rev-btn" onclick="openCardModal('${c.id}')">Bearbeiten</button><button class="rev-btn" onclick="setReview('${cardKey(c.id)}','again')">Morgen</button><button class="rev-btn" onclick="setReview('${cardKey(c.id)}','good')">Sicher</button></div></div>`;
+  });
+  h+=`</div>`;
+  document.getElementById('pn').innerHTML=h;
+}
+function selectedText(max=1400){
+  const s=window.getSelection?.().toString().replace(/\s+/g,' ').trim()||'';
+  return s.length>max?s.slice(0,max).trim():s;
+}
+function autoQuestion(answer,ctx={},mode='qa'){
+  const a=cleanText(answer),title=ctx.title||'dieses Konzept';
+  if(mode==='cloze'){
+    const source=cleanText(ctx.source||'');
+    const sentence=source.split(/(?<=[.!?])\s+/).find(x=>x.includes(a))||source;
+    return sentence&&sentence.length<260?sentence.replace(a,'[...]'):`Ergänze die Lücke: [...]`;
+  }
+  if(a.length<=42)return `Was bedeutet „${a}“?`;
+  if(a.includes(':'))return `Erkläre: ${a.split(':')[0].slice(0,80)}`;
+  return `Erkläre ${title}`;
+}
+function selectionContextFromDOM(){
+  const sel=window.getSelection?.();
+  if(!sel||sel.rangeCount===0||!sel.toString().trim())return null;
+  let node=sel.anchorNode;
+  if(node&&node.nodeType===3)node=node.parentElement;
+  const zone=node?.closest?.('[data-card-zone]');
+  if(!zone)return null;
+  return {
+    modId:zone.dataset.cardMod||cur,
+    unitId:zone.dataset.cardUnit||'',
+    secId:zone.dataset.cardSec||'',
+    title:zone.dataset.cardTitle||'',
+    source:zone.innerText||''
+  };
+}
+function createCardFromSelection(modId,unitId,secId,mode='qa'){
+  const back=selectedText();
+  if(!back){toast('Erst Text markieren');return;}
+  const domCtx=selectionContextFromDOM()||{};
+  const ctx={modId,unitId,secId,title:domCtx.title,source:domCtx.source};
+  _cardCtx=ctx;
+  openCardModal(null,{front:autoQuestion(back,ctx,mode),back,modId,unitId,secId});
+}
+function createCardFromStoredSelection(mode='qa'){
+  if(!_selCard?.back){toast('Erst Text markieren');return;}
+  hideSelectionMenu();
+  _cardCtx=_selCard;
+  openCardModal(null,{..._selCard,front:autoQuestion(_selCard.back,_selCard,mode)});
+}
+function openCardModal(id,seed={}){
+  _eCard=id||null;_cardCtx=seed||null;
+  const c=id?(S.__cards||[]).find(x=>x.id===id):seed;
+  document.getElementById('m-card-h').textContent=id?'Karte bearbeiten':'Neue Karte';
+  document.getElementById('card-front').value=c?.front||'';
+  document.getElementById('card-back').value=c?.back||'';
+  document.getElementById('card-mod').innerHTML=S.__mods.map(m=>`<option value="${m.id}">${escH(m.label)}</option>`).join('');
+  document.getElementById('card-mod').value=c?.modId||cur||S.__mods[0]?.id||'';
+  document.getElementById('card-del-btn').style.display=id?'inline-flex':'none';
+  openM('m-card');setTimeout(()=>document.getElementById(c?.front?'card-back':'card-front').focus(),80);
+}
+function saveCard(){
+  const front=document.getElementById('card-front').value.trim();
+  const back=document.getElementById('card-back').value.trim();
+  const modId=document.getElementById('card-mod').value||cur;
+  if(!front||!back){toast('Vorder- und Rückseite ausfüllen');return;}
+  if(!Array.isArray(S.__cards))S.__cards=[];
+  if(_eCard){const c=S.__cards.find(c=>c.id===_eCard);if(c){c.front=front;c.back=back;c.modId=modId;}}
+  else{S.__cards.push({id:uid(),front,back,modId,unitId:_cardCtx?.unitId||'',secId:_cardCtx?.secId||'',created:todayISO()});}
+  save();closeM('m-card');renderPN();toast('Karte gespeichert');
+}
+function delCard(){
+  if(!_eCard)return;
+  S.__cards=S.__cards.filter(c=>c.id!==_eCard);
+  delete S.__rev[cardKey(_eCard)];
+  save();closeM('m-card');renderPN();toast('Karte gelöscht');
+}
+
+/* =============================================
    SEARCH
    ============================================= */
 function onSearch(){
@@ -1531,6 +1806,7 @@ function onSearch(){
   renderPN();
 }
 function clearSearch(){document.getElementById('search-inp').value='';searchQ='';document.getElementById('search-clear').classList.remove('vis');renderPN();}
+function setSearchFilter(f){searchFilter=f;renderSearch();}
 
 function renderSearch(){
   const res=new Map();
@@ -1539,12 +1815,17 @@ function renderSearch(){
       const um=u.titel.toLowerCase().includes(searchQ)||(u.tags||[]).some(t=>t.toLowerCase().includes(searchQ));
       (u.secs||[]).forEach(s=>{
         const sm=s.titel.toLowerCase().includes(searchQ)||(s.text||'').toLowerCase().includes(searchQ);
-        if(um||sm){const k=md.id+'_'+u.id;if(!res.has(k))res.set(k,{md,u,secs:[]});if(sm)res.get(k).secs.push(s);}
+        const ok=searchFilter==='all'||(searchFilter==='open'&&!s.done)||(searchFilter==='done'&&s.done)||(searchFilter==='critical'&&s.prio==='k')||(searchFilter==='due'&&dueCards().some(c=>c.key===secKey(md.id,u.id,s.id)));
+        if((um||sm)&&ok){const k=md.id+'_'+u.id;if(!res.has(k))res.set(k,{md,u,secs:[]});if(sm)res.get(k).secs.push(s);}
       });
-      if(um&&!(u.secs||[]).length){const k=md.id+'_'+u.id;if(!res.has(k))res.set(k,{md,u,secs:[]});}
+      const uok=searchFilter==='all'||(searchFilter==='open'&&!u.done)||(searchFilter==='done'&&u.done)||(searchFilter==='due'&&dueCards().some(c=>c.key===unitKey(md.id,u.id)));
+      if(um&&uok&&!(u.secs||[]).length){const k=md.id+'_'+u.id;if(!res.has(k))res.set(k,{md,u,secs:[]});}
     });
   });
-  let h=res.size?`<p class="results-lbl">${res.size} Ergebnis${res.size!==1?'se':''} für „${escH(searchQ)}"</p>`:`<div class="search-empty"><div class="sei">🔍</div><p>Keine Ergebnisse für „${escH(searchQ)}"</p></div>`;
+  let h=`<div class="filter-row">
+    ${[['all','Alle'],['open','Offen'],['done','Gelernt'],['critical','Kritisch'],['due','Fällig']].map(([id,l])=>`<button class="chip-btn${searchFilter===id?' active':''}" onclick="setSearchFilter('${id}')">${l}</button>`).join('')}
+  </div>`;
+  h+=res.size?`<p class="results-lbl">${res.size} Ergebnis${res.size!==1?'se':''} für „${escH(searchQ)}"</p>`:`<div class="search-empty"><div class="sei">🔍</div><p>Keine Ergebnisse für „${escH(searchQ)}"</p></div>`;
   res.forEach(({md,u,secs})=>{
     const c=col(md.ci);
     h+=`<div class="unit-card"><div class="unit-top" style="cursor:default">
@@ -1593,7 +1874,7 @@ function renderSB(){
     h+=`</div>`;
   });
   el.innerHTML=h;
-  ['stundenplan','notizen','stats','settings'].forEach(v=>{
+  ['dashboard','review','cards','exams','stundenplan','notizen','stats','settings'].forEach(v=>{
     document.getElementById('nav-'+v)?.classList.toggle('active',view===v);
   });
 }
@@ -1608,6 +1889,7 @@ function renderSecCard(modId,unitId,s,si,total,c){
       <span class="sec-nr">${s.nr}</span>
       <span class="sec-title">${escH(s.titel)}</span>
       ${prioBadge(s.prio)}
+      <span class="rev-due">${dueLabel(secKey(modId,unitId,s.id))}</span>
       <button class="done-btn${s.done?' done':''}" onclick="event.stopPropagation();toggleSecDone('${modId}','${unitId}','${s.id}')">${s.done?'↩ Zurücksetzen':'✓ Gelernt'}</button>
       <button class="sec-icon-btn" onclick="event.stopPropagation();toggleSecEdit('${s.id}')" title="Bearbeiten">✎</button>
       <button class="sec-icon-btn" onclick="event.stopPropagation();showSecMenu(event,'${modId}','${unitId}','${s.id}',${si},${total})">⋯</button>
@@ -1654,7 +1936,14 @@ function renderSecCard(modId,unitId,s,si,total,c){
   }else if(so){
     h+=`<div class="sec-body">`;
     if(s.lz)h+=`<div class="lz">Lernziel: ${escH(s.lz)}</div>`;
-    if(s.text)h+=`<div class="rich">${renderRich(s.text)}</div>`;
+    if(s.text)h+=`<div class="rich" data-card-zone data-card-mod="${escA(modId)}" data-card-unit="${escA(unitId)}" data-card-sec="${escA(s.id)}" data-card-title="${escA(s.titel)}">${renderRich(s.text)}</div>`;
+    h+=`<div class="rev-row">
+      <button class="rev-btn" onclick="createCardFromSelection('${modId}','${unitId}','${s.id}')">Karte aus Auswahl</button>
+      <button class="rev-btn" onclick="setReview('${secKey(modId,unitId,s.id)}','again')">Nochmal</button>
+      <button class="rev-btn" onclick="setReview('${secKey(modId,unitId,s.id)}','hard')">Schwer</button>
+      <button class="rev-btn" onclick="setReview('${secKey(modId,unitId,s.id)}','good')">Sicher</button>
+      <button class="rev-btn" onclick="setReview('${secKey(modId,unitId,s.id)}','easy')">Sehr sicher</button>
+    </div>`;
     h+=`</div>`;
   }
   h+=`</div>`;
@@ -1696,6 +1985,7 @@ function renderModule(){
           ${!uo?makePreview(u):''}
         </div>
         <div class="unit-actions">
+          <span class="rev-due">${dueLabel(unitKey(cur,u.id))}</span>
           <button class="done-btn${u.done?' done':''}" onclick="event.stopPropagation();toggleUnitDone('${cur}','${u.id}')">${u.done?'↩ Zurücksetzen':'✓ Gelernt'}</button>
           <button class="icon-btn" onclick="event.stopPropagation();showUnitMenu(event,'${cur}','${u.id}',${ui},${units.length})">⋯</button>
         </div>
@@ -1703,7 +1993,7 @@ function renderModule(){
       </div>`;
       if(uo){
         h+=`<div class="unit-detail">`;
-        if(u.intro)h+=`<div class="rich" style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--bd)">${renderRich(u.intro)}</div>`;
+        if(u.intro)h+=`<div class="rich" data-card-zone data-card-mod="${escA(cur)}" data-card-unit="${escA(u.id)}" data-card-sec="" data-card-title="${escA(u.titel)}" style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--bd)">${renderRich(u.intro)}<div class="rev-row"><button class="rev-btn" onclick="createCardFromSelection('${cur}','${u.id}','')">Karte aus Auswahl</button><button class="rev-btn" onclick="setReview('${unitKey(cur,u.id)}','again')">Nochmal</button><button class="rev-btn" onclick="setReview('${unitKey(cur,u.id)}','hard')">Schwer</button><button class="rev-btn" onclick="setReview('${unitKey(cur,u.id)}','good')">Sicher</button><button class="rev-btn" onclick="setReview('${unitKey(cur,u.id)}','easy')">Sehr sicher</button></div></div>`;
         const secs=u.secs||[];
         secs.forEach((s,si)=>{h+=renderSecCard(cur,u.id,s,si,secs.length,c);});
         h+=`<div class="action-row"><button class="act-btn" onclick="openSecModal(null,'${cur}','${u.id}')">＋ Abschnitt hinzufügen</button></div></div>`;
@@ -1724,15 +2014,59 @@ function collapseAll(){openUnits.clear();openSecs.clear();editSecs.clear();rende
 /* =============================================
    STUNDENPLAN
    ============================================= */
+function normTime(t=''){return String(t).replace(/[–—]/g,'-').replace(/\s+/g,'').trim();}
+function spStartMin(t){
+  const m=normTime(t).match(/^(\d{1,2}):(\d{2})/);
+  return m?Number(m[1])*60+Number(m[2]):9999;
+}
+function spLabel(t){
+  const n=normTime(t);
+  if(!n.includes('-'))return n;
+  const[a,b]=n.split('-');
+  return `${a}\n-${b||''}`;
+}
+function spToday(){
+  const map=['So','Mo','Di','Mi','Do','Fr','Sa'];
+  const d=map[new Date().getDay()];
+  return DAYS.includes(d)?d:null;
+}
+function spEventIndex(){
+  const out=new Map();
+  Object.entries(S.__sp||{}).forEach(([rawKey,ev])=>{
+    const sep=rawKey.indexOf('_');
+    if(sep<0||!ev)return;
+    const day=rawKey.slice(0,sep),time=normTime(rawKey.slice(sep+1));
+    const key=day+'_'+time;
+    if(!out.has(key))out.set(key,[]);
+    out.get(key).push({...ev,__key:rawKey,__day:day,__time:time});
+  });
+  return out;
+}
+function spTimes(events){
+  const set=new Set(TIMES.map(normTime));
+  events.forEach((_,key)=>set.add(key.slice(key.indexOf('_')+1)));
+  return [...set].sort((a,b)=>spStartMin(a)-spStartMin(b)||a.localeCompare(b));
+}
 function renderStundenplan(){
-  let h=`<div class="page-hdr"><span class="page-title">Stundenplan</span></div><div class="sp-wrap"><div class="sp-head"><div class="sp-hc">Zeit</div>${DAYS.map(d=>`<div class="sp-hc">${d}</div>`).join('')}</div>`;
-  TIMES.forEach(time=>{
-    const[tS,tE]=(time+'-').split('-');
-    h+=`<div class="sp-row"><div class="sp-time">${tS}\n-${tE||''}</div>`;
+  const events=spEventIndex(),times=spTimes(events),today=spToday();
+  const eventCount=Object.keys(S.__sp||{}).length;
+  let h=`<div class="page-hdr"><span class="page-title">Stundenplan</span></div>
+  <div class="sp-tools"><div class="sp-summary"><span>${eventCount} Termine</span>${today?`<span class="sp-pill">Heute: ${today}</span>`:''}</div><button class="exp-btn" onclick="restoreEmbedded()">Vollbackup wiederherstellen</button></div>
+  <div class="sp-wrap"><div class="sp-head"><div class="sp-hc">Zeit</div>${DAYS.map(d=>`<div class="sp-hc${d===today?' today':''}">${d}</div>`).join('')}</div>`;
+  times.forEach(time=>{
+    const rowHasEvent=DAYS.some(day=>events.has(day+'_'+time));
+    h+=`<div class="sp-row"><div class="sp-time${rowHasEvent?' has-event':''}">${spLabel(time)}</div>`;
     DAYS.forEach(day=>{
-      const key=day+'_'+time,ev=S.__sp[key];
-      if(ev){const m=getMod(ev.modId),c=m?col(m.ci):{c:'#888',bg:'#eee',tc:'#333'};h+=`<div class="sp-cell" onclick="openSpModal('${day}','${time}','${key}')"><div class="sp-ev" style="background:${c.bg};color:${c.tc}"><span>${escH(ev.title)}</span><span class="sp-ev-sub">${m?escH(m.label):''}${ev.room?' · '+escH(ev.room):''}</span></div></div>`;}
-      else{h+=`<div class="sp-cell" onclick="openSpModal('${day}','${time}',null)"><div class="sp-plus">＋</div></div>`;}
+      const key=day+'_'+time,list=events.get(key)||[];
+      const cellCls=`sp-cell${day===today?' today':''}${list.length?' has-event':''}`;
+      if(list.length){
+        h+=`<div class="${cellCls}" onclick="openSpModal('${day}','${time}','${list[0].__key}')"><div class="sp-stack">`;
+        list.forEach(ev=>{
+          const m=getMod(ev.modId),c=m?col(m.ci):{c:'#888',bg:'#eee',tc:'#333'};
+          h+=`<div class="sp-ev" style="background:${c.bg};color:${c.tc}"><span>${escH(ev.title)}</span><span class="sp-ev-sub">${m?escH(m.label):''}${ev.room?' · '+escH(ev.room):''}</span>${S.__spNotes[ev.__key]?'<span class="sp-note">Notiz vorhanden</span>':''}</div>`;
+        });
+        h+=`</div></div>`;
+      }else{h+=`<div class="${cellCls}" onclick="openSpModal('${day}','${time}',null)"><div class="sp-plus">＋</div></div>`;}
     });
     h+=`</div>`;
   });
@@ -1745,13 +2079,13 @@ function openSpModal(day,time,key){
   _spDay=day;_spTime=time;_spId=key;
   document.getElementById('m-sp-h').textContent=key?'Veranstaltung bearbeiten':'Veranstaltung hinzufügen';
   document.getElementById('sp-mod').innerHTML=S.__mods.map(m=>`<option value="${m.id}">${escH(m.label)}</option>`).join('');
-  document.getElementById('sp-title').value='';document.getElementById('sp-room').value='';
+  document.getElementById('sp-title').value='';document.getElementById('sp-room').value='';document.getElementById('sp-note').value=key?(S.__spNotes[key]||''):'';
   document.getElementById('sp-del-btn').style.display='none';
   if(key&&S.__sp[key]){const ev=S.__sp[key];document.getElementById('sp-mod').value=ev.modId;document.getElementById('sp-title').value=ev.title;document.getElementById('sp-room').value=ev.room||'';document.getElementById('sp-del-btn').style.display='inline-flex';}
   openM('m-sp');
 }
-function saveSp(){const key=_spDay+'_'+_spTime;S.__sp[key]={modId:document.getElementById('sp-mod').value,title:document.getElementById('sp-title').value.trim()||'Veranstaltung',room:document.getElementById('sp-room').value.trim()};save();closeM('m-sp');renderPN();}
-function delSp(){if(_spId)delete S.__sp[_spId];save();closeM('m-sp');renderPN();}
+function saveSp(){const key=_spDay+'_'+normTime(_spTime);S.__sp[key]={modId:document.getElementById('sp-mod').value,title:document.getElementById('sp-title').value.trim()||'Veranstaltung',room:document.getElementById('sp-room').value.trim()};const note=document.getElementById('sp-note').value.trim();if(note)S.__spNotes[key]=note;else delete S.__spNotes[key];if(_spId&&_spId!==key){delete S.__sp[_spId];delete S.__spNotes[_spId];}save();closeM('m-sp');renderPN();}
+function delSp(){if(_spId){delete S.__sp[_spId];delete S.__spNotes[_spId];}save();closeM('m-sp');renderPN();}
 
 /* =============================================
    NOTIZEN
@@ -1863,6 +2197,10 @@ function renderSettings(){
    ============================================= */
 function renderPN(){
   if(searchQ){renderSearch();return;}
+  if(view==='dashboard'){renderDashboard();return;}
+  if(view==='review'){renderReview();return;}
+  if(view==='cards'){renderCards();return;}
+  if(view==='exams'){renderExams();return;}
   if(view==='stundenplan'){renderStundenplan();return;}
   if(view==='notizen'){renderNotizen();return;}
   if(view==='stats'){renderStats();return;}
@@ -1903,9 +2241,43 @@ document.addEventListener('keydown',e=>{
   }
   if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&anyOpen){
     const id=document.querySelector('.backdrop.open')?.id;
-    if(id==='m-unit')saveUnit();else if(id==='m-sec')saveSec();else if(id==='m-mod')saveMod();else if(id==='m-sp')saveSp();else if(id==='m-ws')saveWs();
+    if(id==='m-unit')saveUnit();else if(id==='m-sec')saveSec();else if(id==='m-mod')saveMod();else if(id==='m-sp')saveSp();else if(id==='m-ws')saveWs();else if(id==='m-card')saveCard();
   }
 });
+
+/* =============================================
+   SELECTION TO CARD
+   ============================================= */
+function hideSelectionMenu(){
+  const m=document.getElementById('sel-menu');
+  if(m)m.classList.remove('show');
+}
+function showSelectionMenu(){
+  const sel=window.getSelection?.();
+  const text=selectedText();
+  const ctx=selectionContextFromDOM();
+  const menu=document.getElementById('sel-menu');
+  if(!sel||!text||!ctx||!menu){hideSelectionMenu();return;}
+  const range=sel.rangeCount?sel.getRangeAt(0):null;
+  if(!range){hideSelectionMenu();return;}
+  const rect=range.getBoundingClientRect();
+  if(!rect||(!rect.width&&!rect.height)){hideSelectionMenu();return;}
+  _selCard={...ctx,back:text};
+  menu.style.left=Math.max(8,Math.min(window.innerWidth-170,rect.left+rect.width/2-72))+'px';
+  menu.style.top=Math.max(8,rect.top-46)+'px';
+  menu.classList.add('show');
+}
+document.addEventListener('mouseup',e=>{
+  if(e.target.closest?.('#sel-menu'))return;
+  setTimeout(showSelectionMenu,40);
+});
+document.addEventListener('keyup',e=>{
+  if(e.key==='Shift'||e.key.startsWith('Arrow'))setTimeout(showSelectionMenu,40);
+});
+document.addEventListener('mousedown',e=>{
+  if(!e.target.closest?.('#sel-menu'))hideSelectionMenu();
+});
+document.addEventListener('scroll',hideSelectionMenu,true);
 
 /* =============================================
    CONTEXT MENU
